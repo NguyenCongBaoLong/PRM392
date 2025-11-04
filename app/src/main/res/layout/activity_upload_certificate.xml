@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Certificate Name -->
+        <EditText
+            android:id="@+id/etCertificateName"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:hint="@string/certificate_name"
+            android:inputType="textCapWords"
+            android:importantForAutofill="yes"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Issuing Organization -->
+        <EditText
+            android:id="@+id/etIssuingOrganization"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:hint="@string/issuing_organization"
+            android:inputType="textCapWords"
+            android:importantForAutofill="yes"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Credential ID -->
+        <EditText
+            android:id="@+id/etCredentialId"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:hint="@string/credential_id"
+            android:inputType="text"
+            android:importantForAutofill="yes"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Date Selection Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <Button
+                android:id="@+id/btnIssueDate"
+                android:layout_width="0dp"
+                android:layout_height="60dp"
+                android:layout_weight="1"
+                android:text="@string/issue_date"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btnExpirationDate"
+                android:layout_width="0dp"
+                android:layout_height="60dp"
+                android:layout_weight="1"
+                android:text="@string/expiration_date"
+                android:layout_marginStart="8dp" />
+
+        </LinearLayout>
+
+        <!-- Selected Dates Display -->
+        <TextView
+            android:id="@+id/tvIssueDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/issue_date_not_selected"
+            android:textSize="12sp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tvExpirationDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/expiration_date_not_selected"
+            android:textSize="12sp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- File Upload Button -->
+        <Button
+            android:id="@+id/btnUploadFile"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="@string/choose_file"
+            android:layout_marginBottom="8dp" />
+
+        <!-- File Name Display -->
+        <TextView
+            android:id="@+id/tvFileName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/no_file_selected"
+            android:textAlignment="center"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/btnSaveCertificate"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="@string/save_certificate" />
+
+        <!-- Progress Bar -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:visibility="gone"
+            android:layout_marginTop="16dp" />
+
+    </LinearLayout>
+
+</ScrollView>
