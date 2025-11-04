@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".RegisterActivity"
+    tools:context=".activity.RegisterActivity"
     android:padding="20dp"
     >
 
@@ -71,6 +71,17 @@
             android:padding="12dp"
 
             android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:id="@+id/tvError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:text=""
+            android:textColor="#D32F2F"
+
+        />
+
         <Button
             android:id="@+id/btnRegister"
             android:layout_width="match_parent"
@@ -94,6 +105,7 @@
                 android:layout_height="wrap_content"
                 android:text="You have an account? "/>
             <TextView
+                android:id="@+id/tvLogin"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#348feb"
