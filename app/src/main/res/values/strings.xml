@@ -1,4 +1,16 @@
 <resources>
     <string name="app_name">My Application</string>
     <string name="register">Register</string>
+
+
+    <string name="certificate_name">Certificate Name</string>
+    <string name="issuing_organization">Issuing Organization</string>
+    <string name="credential_id">Credential ID</string>
+    <string name="issue_date">Issue Date</string>
+    <string name="expiration_date">Expiration Date</string>
+    <string name="issue_date_not_selected">Issue Date: Not selected</string>
+    <string name="expiration_date_not_selected">Expiration Date: Not selected</string>
+    <string name="choose_file">Choose File</string>
+    <string name="no_file_selected">No file selected</string>
+    <string name="save_certificate">Save Certificate</string>
 </resources>

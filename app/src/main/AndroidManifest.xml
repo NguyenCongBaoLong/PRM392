@@ -28,6 +28,8 @@
             android:exported="false">
 
         </activity>
+        <activity android:name=".activity.UploadCertificateActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
