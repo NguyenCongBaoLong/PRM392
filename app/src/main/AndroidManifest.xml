@@ -20,6 +20,11 @@
 
         <activity
             android:name=".activity.RegisterActivity"
+            android:exported="false">
+        </activity>
+
+        <activity
+            android:name=".activity.DashboardActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,7 +32,9 @@
             </intent-filter>
         </activity>
 
-
+        <activity
+            android:name=".activity.CertificateDetailActivity"
+            android:exported="false" />
 
         <activity android:name=".activity.UploadCertificateActivity"
             android:exported="false" />
