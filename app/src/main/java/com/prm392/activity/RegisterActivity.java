@@ -24,6 +24,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.auth.GetTokenResult;
 
+import com.prm392.LoginActivity;
 import com.prm392.R;
 
 public class RegisterActivity extends AppCompatActivity {
@@ -58,6 +59,13 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 CreateUser();
+            }
+        });
+        tvLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                startActivity(intent);
             }
         });
     }
@@ -104,7 +112,7 @@ public class RegisterActivity extends AppCompatActivity {
                                                 prefs.edit().putString("jwt_token", jwtToken).apply();
 
                                                 // Chuyển sang DashboardActivity
-                                                Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+                                                Intent intent = new Intent(RegisterActivity.this, UploadCertificateActivity.class);
                                                 startActivity(intent);
                                                 finish();
                                             } else {
