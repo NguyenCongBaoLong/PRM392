@@ -1,8 +1,9 @@
 package com.prm392.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Certificate {
+public class Certificate implements Serializable {
     private String id;
     private String certificateName;
     private String issuingOrganization;
