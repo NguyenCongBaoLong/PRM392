@@ -9,12 +9,17 @@
     app:cardElevation="4dp">
 
     <LinearLayout
-        android:layout_width="match_parent"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="16dp"
+    android:gravity="center_vertical">
+        <LinearLayout
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
-
-        <TextView
+        android:layout_weight="1">
+            <TextView
             android:id="@+id/tv_certificate_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -22,15 +27,13 @@
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@android:color/black" />
-
-        <TextView
+            <TextView
             android:id="@+id/tv_issuer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Tổ chức cấp: XYZ"
             android:layout_marginTop="4dp" />
-
-        <TextView
+            <TextView
             android:id="@+id/tv_expiration_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -38,6 +41,14 @@
             android:layout_marginTop="8dp"
             android:textSize="14sp"
             android:textStyle="italic" />
-
+        </LinearLayout>
+        <Button
+            android:id="@+id/btn_view_detail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chi Tiết"
+            android:backgroundTint="@color/design_default_color_primary"
+            android:textColor="@android:color/white"
+            android:layout_marginStart="8dp"/>
     </LinearLayout>
 </androidx.cardview.widget.CardView>
