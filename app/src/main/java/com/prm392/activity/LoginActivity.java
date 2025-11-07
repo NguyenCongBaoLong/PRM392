@@ -39,7 +39,6 @@ public class LoginActivity extends AppCompatActivity {
 
         btnLogin.setOnClickListener(v -> login());
 
-        //tvRegister.setOnClickListener(v -> startActivity(new Intent(LoginActivity.this, DashboardActivity.class)));
         tvRegister.setOnClickListener(v -> startActivity(new Intent(LoginActivity.this, RegisterActivity.class)));
 
         tvForgotPassword.setOnClickListener(v -> {
@@ -85,7 +84,7 @@ public class LoginActivity extends AppCompatActivity {
                                         SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
                                         prefs.edit().putString("auth_token", jwtToken).apply();
 
-                                        //startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
+                                        startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
                                         finish();
                                     } else {
                                         Toast.makeText(LoginActivity.this, "Lỗi lấy token: " + tokenTask.getException().getMessage(), Toast.LENGTH_SHORT).show();
