@@ -98,6 +98,10 @@ public class UploadCertificateActivity extends AppCompatActivity {
         btnUploadFile.setOnClickListener(v -> openFilePicker());
         btnSaveCertificate.setOnClickListener(v -> saveCertificate());
     }
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
 
     private void openFilePicker() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
