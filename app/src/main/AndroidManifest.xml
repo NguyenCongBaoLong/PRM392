@@ -33,14 +33,24 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activity.DashboardActivity"
-            android:exported="false" >
+            android:name=".activity.MyCertificateActivity"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".activity.EditCertificateActivity"
+            android:exported="false">
+        </activity>
+
+        <activity android:name=".activity.HomeActivity"
+            android:exported="false">
         </activity>
         <activity
             android:name=".activity.CertificateDetailActivity"
             android:exported="false" />
         <activity
             android:name=".activity.UploadCertificateActivity"
+            android:exported="false" />
+        <activity android:name=".activity.SharingHistoryActivity"
             android:exported="false" />
     </application>
 
