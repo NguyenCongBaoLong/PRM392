@@ -16,9 +16,23 @@ public class Certificate implements Serializable {
 
     public Certificate() {}
 
-    public Certificate(String certificateName, String issuingOrganization,
+    public Certificate(String certificateId, String certificateName, String issuingOrganization,
                        String credentialId, Date issueDate, Date expirationDate,
                        String fileUrl, String fileName, String userId) {
+        this.id = certificateId;
+        this.certificateName = certificateName;
+        this.issuingOrganization = issuingOrganization;
+        this.credentialId = credentialId;
+        this.issueDate = issueDate;
+        this.expirationDate = expirationDate;
+        this.fileUrl = fileUrl;
+        this.fileName = fileName;
+        this.userId = userId;
+    }
+    public Certificate( String certificateName, String issuingOrganization,
+                        String credentialId, Date issueDate, Date expirationDate,
+                        String fileUrl, String fileName, String userId) {
+
         this.certificateName = certificateName;
         this.issuingOrganization = issuingOrganization;
         this.credentialId = credentialId;

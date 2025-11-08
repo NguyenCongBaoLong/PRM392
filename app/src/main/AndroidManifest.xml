@@ -27,11 +27,17 @@
         </activity>
 
         <activity
-            android:name=".activity.DashboardActivity"
+            android:name=".activity.MyCertificateActivity"
             android:exported="false">
-
+        </activity>
+        <activity
+            android:name=".activity.EditCertificateActivity"
+            android:exported="false">
         </activity>
 
+        <activity android:name=".activity.HomeActivity"
+            android:exported="false">
+        </activity>
         <activity
             android:name=".activity.CertificateDetailActivity"
             android:exported="false" />
