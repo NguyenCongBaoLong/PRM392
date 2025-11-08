@@ -24,7 +24,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.auth.GetTokenResult;
 
-import com.prm392.LoginActivity;
 import com.prm392.R;
 
 public class RegisterActivity extends AppCompatActivity {
