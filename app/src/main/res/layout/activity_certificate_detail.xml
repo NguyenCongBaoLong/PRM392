@@ -98,6 +98,16 @@
             android:text="file.pdf"/>
 
         <Button
+            android:id="@+id/btn_share_certificate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="Chia sẻ chứng chỉ"
+            android:padding="12dp"
+            android:backgroundTint="@android:color/holo_green_dark" />
+
+
+        <Button
             android:id="@+id/btn_edit_certificate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -105,6 +115,13 @@
             android:text="Chỉnh sửa chứng chỉ"
             android:padding="12dp"
             android:backgroundTint="?attr/colorPrimary" />
+        <Button
+            android:id="@+id/btn_set_reminder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Đặt nhắc nhở hết hạn"
+            android:padding="12dp"
+            android:backgroundTint="@android:color/holo_orange_dark" />
 
     </LinearLayout>
 </ScrollView>
