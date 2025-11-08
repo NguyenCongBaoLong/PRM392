@@ -25,6 +25,10 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.auth.GetTokenResult;
 
 import com.prm392.R;
+import com.prm392.entity.User;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class RegisterActivity extends AppCompatActivity {
     FirebaseAuth auth = FirebaseAuth.getInstance();
@@ -89,38 +93,50 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        if (password.length() < 6) {
-            showError("Mật khẩu phải có ít nhất 6 ký tự.");
+        if (password.length() < 6 ||
+                !password.matches(".*[A-Z].*") ||
+                !password.matches(".*[a-z].*")) {
+            showError("Mật khẩu phải có ít nhất 6 ký tự, bao gồm cả chữ hoa và chữ thường.");
             return;
         }
+
         auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task ->{
                     if (task.isSuccessful()) {
                         FirebaseUser user = auth.getCurrentUser();
                         if (user != null) {
-                            // Lấy JWT token
-                            user.getIdToken(true)
-                                    .addOnCompleteListener(new OnCompleteListener<GetTokenResult>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<GetTokenResult> tokenTask) {
-                                            if (tokenTask.isSuccessful()) {
-                                                String jwtToken = tokenTask.getResult().getToken();
 
-                                                // Lưu JWT vào SharedPreferences
-                                                SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-                                                prefs.edit().putString("jwt_token", jwtToken).apply();
+                            // Lưu thêm thông tin người dùng vào Firestore
+                            FirebaseFirestore db = FirebaseFirestore.getInstance();
+                            User user1 = new User(user.getUid(), fullName, email);
 
-                                                // Chuyển sang DashboardActivity
-                                                Intent intent = new Intent(RegisterActivity.this, UploadCertificateActivity.class);
-                                                startActivity(intent);
-                                                finish();
-                                            } else {
-                                                Toast.makeText(RegisterActivity.this, "Không lấy được token", Toast.LENGTH_SHORT).show();
-                                            }
-                                        }
+
+                            db.collection("users").document(user.getUid())
+                                    .set(user1)
+                                    .addOnCompleteListener(setTask -> {
+
+                                        user.getIdToken(true)
+                                                .addOnCompleteListener(tokenTask -> {
+                                                    if (tokenTask.isSuccessful()) {
+                                                        String jwtToken = tokenTask.getResult().getToken();
+
+                                                        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+                                                        prefs.edit().putString("jwt_token", jwtToken).apply();
+
+                                                        Intent intent = new Intent(RegisterActivity.this, ProfileActivity.class);
+                                                        startActivity(intent);
+                                                        finish();
+                                                    } else {
+                                                        Toast.makeText(RegisterActivity.this, "Không lấy được token", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                });
+
+
                                     });
+
                         }
-                    } else {
+                    }
+                    else {
                         Toast.makeText(RegisterActivity.this,
                                 task.getException() != null ? task.getException().getMessage() : "Đăng ký thất bại",
                                 Toast.LENGTH_SHORT).show();
