@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="CHỈNH SỬA THÔNG TIN CHỨNG CHỈ"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="24dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tên Chứng chỉ (*)"
+            android:textStyle="bold" />
+        <EditText
+            android:id="@+id/et_certificate_name_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Ví dụ: AWS Certified Developer"
+            android:inputType="textCapWords"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tổ chức Cấp (*)"
+            android:textStyle="bold" />
+        <EditText
+            android:id="@+id/et_issuing_organization_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Ví dụ: Microsoft, Amazon"
+            android:inputType="textCapWords"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mã chứng nhận (Credential ID)"
+            android:textStyle="bold" />
+        <EditText
+            android:id="@+id/et_credential_id_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="ID trên chứng chỉ"
+            android:inputType="text"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ngày Cấp (DD/MM/YYYY)"
+            android:textStyle="bold" />
+        <EditText
+            android:id="@+id/et_issue_date_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Chọn ngày cấp"
+            android:inputType="none"
+            android:focusable="false"
+            android:clickable="true"
+            android:longClickable="true"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ngày Hết hạn (DD/MM/YYYY)"
+            android:textStyle="bold" />
+        <EditText
+            android:id="@+id/et_expiration_date_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Để trống nếu vĩnh viễn (Long Click để xóa)"
+            android:inputType="none"
+            android:focusable="false"
+            android:clickable="true"
+            android:longClickable="true"
+            android:layout_marginBottom="24dp"/>
+
+        <Button
+            android:id="@+id/btn_save_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="LƯU THAY ĐỔI"
+            android:padding="12dp"
+            android:backgroundTint="?attr/colorPrimary"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="(*) Trường bắt buộc"
+            android:textSize="12sp"
+            android:layout_marginTop="8dp"/>
+
+    </LinearLayout>
+</ScrollView>
