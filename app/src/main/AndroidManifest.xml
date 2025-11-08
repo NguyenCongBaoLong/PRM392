@@ -38,6 +38,8 @@
 
         <activity android:name=".activity.UploadCertificateActivity"
             android:exported="false" />
+        <activity android:name=".activity.SharingHistoryActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
