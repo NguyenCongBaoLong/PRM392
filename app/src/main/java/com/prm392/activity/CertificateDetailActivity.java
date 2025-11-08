@@ -2,6 +2,9 @@ package com.prm392.activity;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
@@ -16,11 +19,15 @@ import com.prm392.R;
 import com.prm392.model.Certificate;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 public class CertificateDetailActivity extends AppCompatActivity {
 
     private Certificate currentCertificate;
+    private Button btnBack, btnEdit, btnShare, btnSetReminder;
+
     // Dùng SimpleDateFormat để hiển thị ngày tháng
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
@@ -35,35 +42,41 @@ public class CertificateDetailActivity extends AppCompatActivity {
         // 1. Lấy dữ liệu Certificate
         currentCertificate = (Certificate) getIntent().getSerializableExtra("SELECTED_CERTIFICATE");
 
+        // 2. Ánh xạ các nút
+        initViews();
+
         if (currentCertificate != null) {
             // Hiển thị chi tiết
             displayDetails(currentCertificate);
 
-            // 3. Ánh xạ các nút
-            Button btnEdit = findViewById(R.id.btn_edit_certificate);
-            Button btnShare = findViewById(R.id.btn_share_certificate);
-            Button btnSetReminder = findViewById(R.id.btn_set_reminder);
-
-            // 4. Xử lý sự kiện click nút Edit
-            btnEdit.setOnClickListener(v -> {
-                openEditScreen(currentCertificate);
-            });
-
-            // Xử lý sự kiện click nút Share
-            btnShare.setOnClickListener(v -> {
-                shareCertificate();
-            });
-
-            // Xử lý sự kiện click nút Reminder
-            btnSetReminder.setOnClickListener(v -> {
-                setExpirationReminder();
-            });
+            // 3. Xử lý sự kiện click các nút
+            setupClickListeners();
         }
+    }
+
+    private void initViews() {
+        btnBack = findViewById(R.id.btn_back);
+        btnEdit = findViewById(R.id.btn_edit_certificate);
+        btnShare = findViewById(R.id.btn_share_certificate);
+        btnSetReminder = findViewById(R.id.btn_set_reminder);
+    }
+
+    private void setupClickListeners() {
+        // Nút Back
+        btnBack.setOnClickListener(v -> finish());
+
+        // Nút Edit
+        btnEdit.setOnClickListener(v -> openEditScreen(currentCertificate));
+
+        // Nút Share
+        btnShare.setOnClickListener(v -> shareCertificate());
+
+        // Nút Set Reminder
+        btnSetReminder.setOnClickListener(v -> setExpirationReminder());
     }
 
     // Hàm hiển thị dữ liệu chi tiết lên giao diện
     private void displayDetails(Certificate certificate) {
-        // TODO: Cần đảm bảo các ID View này có trong activity_certificate_detail.xml
         TextView tvName = findViewById(R.id.tv_detail_name);
         TextView tvIssuer = findViewById(R.id.tv_detail_issuer);
         TextView tvCredentialId = findViewById(R.id.tv_detail_credential_id);
@@ -92,22 +105,18 @@ public class CertificateDetailActivity extends AppCompatActivity {
         }
     }
 
-    // *** HÀM CHUYỂN SANG MÀN HÌNH CHỈNH SỬA (Dùng startActivityForResult) ***
+    // *** HÀM CHUYỂN SANG MÀN HÌNH CHỈNH SỬA ***
     private void openEditScreen(Certificate certificate) {
         Intent editIntent = new Intent(this, EditCertificateActivity.class);
         editIntent.putExtra("CERTIFICATE_TO_EDIT", certificate);
-
-        // QUAN TRỌNG: Dùng startActivityForResult để nhận kết quả từ màn Edit
         startActivityForResult(editIntent, EDIT_CERTIFICATE_DETAIL_REQUEST_CODE);
     }
 
     // *** CHỨC NĂNG 7: SHARE CERTIFICATE SECURELY ***
     private void shareCertificate() {
-        // Hiển thị dialog chọn phương thức share
         showShareOptionsDialog();
     }
 
-    // Hiển thị dialog chọn phương thức chia sẻ
     private void showShareOptionsDialog() {
         String[] shareOptions = {"Chia sẻ Link", "Gửi qua Email", "Chia sẻ dạng Text"};
 
@@ -129,19 +138,15 @@ public class CertificateDetailActivity extends AppCompatActivity {
         builder.show();
     }
 
-    // Tạo và chia sẻ link
     private void generateShareableLink() {
         if (currentCertificate == null) return;
 
-        // Tạo link chia sẻ (có thể kết nối với backend sau)
         String certificateId = currentCertificate.getId() != null ? currentCertificate.getId() : "temp_id";
         String shareUrl = "https://prm392-certificate.com/share/" + certificateId;
 
-        // Hiển thị intent chia sẻ
         showShareIntent(shareUrl, "Link chia sẻ chứng chỉ");
     }
 
-    // Chia sẻ qua Email
     private void shareViaEmail() {
         if (currentCertificate == null) return;
 
@@ -164,7 +169,6 @@ public class CertificateDetailActivity extends AppCompatActivity {
         }
     }
 
-    // Chia sẻ dạng Text thông thường
     private void shareAsText() {
         if (currentCertificate == null) return;
 
@@ -180,7 +184,6 @@ public class CertificateDetailActivity extends AppCompatActivity {
         showShareIntent(shareText, "Chia sẻ chứng chỉ");
     }
 
-    // Phương thức hiển thị Share Intent chung
     private void showShareIntent(String content, String title) {
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.setType("text/plain");
@@ -190,7 +193,7 @@ public class CertificateDetailActivity extends AppCompatActivity {
         startActivity(Intent.createChooser(shareIntent, "Chia sẻ chứng chỉ"));
     }
 
-    // *** CHỨC NĂNG 8: SET EXPIRATION REMINDERS ***
+    // *** CHỨC NĂNG 8: SET EXPIRATION REMINDERS VỚI WORKMANAGER ***
     private void setExpirationReminder() {
         if (currentCertificate == null || currentCertificate.getExpirationDate() == null) {
             Toast.makeText(this, "Chứng chỉ này không có ngày hết hạn", Toast.LENGTH_SHORT).show();
@@ -199,6 +202,7 @@ public class CertificateDetailActivity extends AppCompatActivity {
 
         String[] reminderOptions = {
                 "1 ngày trước",
+                "3 ngày trước",
                 "1 tuần trước",
                 "2 tuần trước",
                 "1 tháng trước"
@@ -209,58 +213,96 @@ public class CertificateDetailActivity extends AppCompatActivity {
         builder.setItems(reminderOptions, (dialog, which) -> {
             switch (which) {
                 case 0:
-                    scheduleReminder(1, "ngày");
+                    scheduleReminder(1);
                     break;
                 case 1:
-                    scheduleReminder(7, "ngày");
+                    scheduleReminder(3);
                     break;
                 case 2:
-                    scheduleReminder(14, "ngày");
+                    scheduleReminder(7);
                     break;
                 case 3:
-                    scheduleReminder(30, "ngày");
+                    scheduleReminder(14);
+                    break;
+                case 4:
+                    scheduleReminder(30);
                     break;
             }
         });
         builder.show();
     }
 
-    // Lên lịch nhắc nhở
-    private void scheduleReminder(int daysBefore, String unit) {
-        // TODO: Triển khai logic lên lịch nhắc nhở thực tế
-        // Có thể sử dụng AlarmManager hoặc WorkManager
+    // 🔥 CẬP NHẬT: SCHEDULE REMINDER VỚI WORKMANAGER
+    private void scheduleReminder(int daysBefore) {
+        if (currentCertificate == null || currentCertificate.getExpirationDate() == null) return;
 
-        String message = "Đã đặt nhắc nhở " + daysBefore + " " + unit + " trước khi hết hạn";
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        try {
+            Calendar expirationDate = Calendar.getInstance();
+            expirationDate.setTime(currentCertificate.getExpirationDate());
 
-        // Ghi log hoặc lưu preference
-        saveReminderPreference(daysBefore);
+            Calendar reminderDate = (Calendar) expirationDate.clone();
+            reminderDate.add(Calendar.DAY_OF_YEAR, -daysBefore);
+
+            long delayInMillis = reminderDate.getTimeInMillis() - System.currentTimeMillis();
+
+            if (delayInMillis > 0) {
+                // Tạo data cho worker
+                Data inputData = new Data.Builder()
+                        .putString("certificate_name", currentCertificate.getCertificateName())
+                        .putInt("days_left", daysBefore)
+                        .build();
+
+                // Tạo work request
+                OneTimeWorkRequest reminderWork = new OneTimeWorkRequest.Builder(NotificationWorker.class)
+                        .setInitialDelay(delayInMillis, TimeUnit.MILLISECONDS)
+                        .setInputData(inputData)
+                        .build();
+
+                // Lên lịch reminder
+                WorkManager.getInstance(this).enqueue(reminderWork);
+
+                String message = "Đã đặt nhắc nhở " + daysBefore + " ngày trước khi hết hạn";
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+
+                // Lưu thông tin reminder
+                saveReminderToPreferences(reminderWork.getId().toString(), daysBefore);
+
+            } else {
+                Toast.makeText(this, "Không thể đặt nhắc nhở cho quá khứ", Toast.LENGTH_SHORT).show();
+            }
+
+        } catch (Exception e) {
+            Toast.makeText(this, "Lỗi khi đặt nhắc nhở", Toast.LENGTH_SHORT).show();
+        }
     }
 
-    // Lưu cài đặt nhắc nhở (tạm thời)
-    private void saveReminderPreference(int daysBefore) {
+    // 🔥 CẬP NHẬT: LƯU REMINDER PREFERENCES
+    private void saveReminderToPreferences(String workId, int daysBefore) {
         // TODO: Lưu vào SharedPreferences hoặc database
-        // SharedPreferences prefs = getSharedPreferences("reminder_prefs", MODE_PRIVATE);
-        // prefs.edit().putInt("reminder_days_before", daysBefore).apply();
+        // SharedPreferences prefs = getSharedPreferences("certificate_reminders", MODE_PRIVATE);
+        // String certificateId = currentCertificate.getId() != null ? currentCertificate.getId() : "temp_" + System.currentTimeMillis();
+        // prefs.edit().putString(certificateId, workId).apply();
+        // prefs.edit().putInt(certificateId + "_days", daysBefore).apply();
     }
 
-    // Xử lý kết quả trả về từ EditCertificateActivity
+    // *** XỬ LÝ BACK & NAVIGATION ***
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == EDIT_CERTIFICATE_DETAIL_REQUEST_CODE && resultCode == RESULT_OK) {
-            // Nếu chỉnh sửa thành công, báo cho màn hình danh sách biết
             setResult(RESULT_OK);
-
-            // Tải lại chi tiết ngay lập tức trên màn hình này
             if (currentCertificate != null) {
                 displayDetails(currentCertificate);
             }
         }
     }
 
-    // Dùng onResume để đảm bảo màn hình Detail được cập nhật khi quay lại
     @Override
     protected void onResume() {
         super.onResume();

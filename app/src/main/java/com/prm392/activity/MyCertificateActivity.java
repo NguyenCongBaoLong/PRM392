@@ -31,6 +31,7 @@ public class MyCertificateActivity extends AppCompatActivity {
     // Khai báo SearchView và Button Filter
     private SearchView searchView;
     private Button btnFilter;
+    private Button btnBack;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +42,7 @@ public class MyCertificateActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recycler_view_certificates);
         searchView = findViewById(R.id.search_view_certificate); // Lấy SearchView từ XML
         btnFilter = findViewById(R.id.btn_filter);
+        btnBack = findViewById(R.id.btn_back);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -66,6 +68,13 @@ public class MyCertificateActivity extends AppCompatActivity {
         btnFilter.setOnClickListener(v -> {
             Toast.makeText(MyCertificateActivity.this, "Chức năng Lọc đang được phát triển...", Toast.LENGTH_SHORT).show();
         });
+        btnBack.setOnClickListener(v -> {
+            finish(); // Đóng activity và quay lại
+        });
+    }
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
     }
 
     // Hàm thiết lập logic cho SearchView

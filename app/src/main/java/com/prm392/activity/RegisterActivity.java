@@ -123,7 +123,7 @@ public class RegisterActivity extends AppCompatActivity {
                                                         SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
                                                         prefs.edit().putString("jwt_token", jwtToken).apply();
 
-                                                        Intent intent = new Intent(RegisterActivity.this, ProfileActivity.class);
+                                                        Intent intent = new Intent(RegisterActivity.this, HomeActivity.class);
                                                         startActivity(intent);
                                                         finish();
                                                     } else {
