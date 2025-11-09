@@ -46,6 +46,9 @@
         <activity android:name=".activity.HomeActivity"
             android:exported="false">
         </activity>
+        <activity android:name=".activity.PublicProfileSetupActivity"
+            android:exported="false">
+        </activity>
         <activity
             android:name=".activity.CertificateDetailActivity"
             android:exported="false" />
