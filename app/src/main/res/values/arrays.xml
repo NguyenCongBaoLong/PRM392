@@ -1,0 +1,6 @@
+<resources>
+    <string-array name="export_formats">
+        <item>PDF</item>
+        <item>CSV</item>
+    </string-array>
+</resources>
