@@ -74,9 +74,9 @@ public class ProfileActivity extends AppCompatActivity {
             UpdateProfile();
         });
         btnChangePass.setOnClickListener(view->{
-            Intent intent = new Intent(ProfileActivity.this, ProfileActivity.class);
+            Intent intent = new Intent(ProfileActivity.this, ChangePassActivity.class);
             startActivity(intent);
-            finish();
+
         });
 
     }
