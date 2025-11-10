@@ -75,9 +75,9 @@ public class ChangePassActivity extends AppCompatActivity {
 
         FirebaseUser user = auth.getCurrentUser();
         if (user == null || user.getEmail() == null) {
-            tvErr.setVisibility(View.VISIBLE);
-            tvErr.setText("Không xác định được tài khoản!");
-            return;
+                Intent intent = new Intent(ChangePassActivity.this,LoginActivity.class);
+                startActivity(intent);
+                return;
         }
 
         // Xác thực lại người dùng bằng mật khẩu cũ

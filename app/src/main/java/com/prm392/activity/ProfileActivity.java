@@ -86,7 +86,11 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void UpdateProfile() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) return;
+        if (user == null){
+            Intent intent = new Intent(ProfileActivity.this,LoginActivity.class);
+            startActivity(intent);
+            return;
+        }
 
         String fullName = etFullName.getText().toString().trim();
         if (fullName.isEmpty()) {

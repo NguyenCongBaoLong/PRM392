@@ -1,5 +1,6 @@
 package com.prm392.activity;
 
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.pdf.PdfDocument;
@@ -14,6 +15,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.prm392.R;
 
 import java.io.File;
@@ -40,7 +43,12 @@ public class ReportActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null){
+            Intent intent = new Intent(ReportActivity.this,LoginActivity.class);
+            startActivity(intent);
+            return;
+        }
         spinnerFormat = findViewById(R.id.spinnerFormat);
         btnExport = findViewById(R.id.btnExport);
         tvStatus = findViewById(R.id.tvStatus);
