@@ -16,13 +16,24 @@
             android:textSize="20sp"
             android:textStyle="bold"
             android:gravity="center"
-            android:layout_marginBottom="24dp"/>
+            android:layout_marginBottom="16dp"/>
 
-        <TextView
+        <Button
+            android:id="@+id/btn_back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Tên Chứng chỉ (*)"
-            android:textStyle="bold" />
+            android:text="← Quay lại"
+            android:backgroundTint="@android:color/holo_blue_dark"
+            android:textColor="@android:color/black"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:layout_marginBottom="24dp"/> <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tên Chứng chỉ (*)"
+        android:textStyle="bold" />
         <EditText
             android:id="@+id/et_certificate_name_edit"
             android:layout_width="match_parent"

@@ -9,18 +9,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
-        <Button
-            android:id="@+id/btn_back"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
-            android:text="← Quay lại"
-            android:background="@android:color/holo_blue_dark"
-            android:textColor="@android:color/black"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp" />
 
         <TextView
             android:layout_width="match_parent"
@@ -29,7 +17,20 @@
             android:textSize="24sp"
             android:textStyle="bold"
             android:gravity="center"
-            android:layout_marginBottom="24dp"/>
+            android:layout_marginBottom="16dp"/>
+
+        <Button
+            android:id="@+id/btn_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:text="← Quay lại"
+            android:backgroundTint="@android:color/holo_blue_dark"
+            android:textColor="@android:color/black"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -70,31 +71,54 @@
             android:layout_marginBottom="12dp"
             android:text="ID"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Ngày Cấp:"
-            android:textStyle="bold" />
-        <TextView
-            android:id="@+id/tv_detail_issue_date"
+        <View
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:layout_marginBottom="12dp"
-            android:text="dd/MM/yyyy"/>
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"
+            android:layout_marginVertical="16dp"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Ngày Hết hạn:"
-            android:textStyle="bold" />
-        <TextView
-            android:id="@+id/tv_detail_expiry"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:layout_marginBottom="24dp"
-            android:text="dd/MM/yyyy hoặc Vĩnh Viễn"/>
+            android:orientation="horizontal"
+            android:layout_marginBottom="24dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ngày Cấp:"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tv_detail_issue_date"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:text="dd/MM/yyyy"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ngày Hết hạn:"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tv_detail_expiry"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:text="dd/MM/yyyy hoặc Vĩnh Viễn"/>
+            </LinearLayout>
+        </LinearLayout>
 
         <TextView
             android:layout_width="wrap_content"
@@ -131,17 +155,19 @@
             android:layout_height="wrap_content"
             android:text="+ Thêm Thẻ Phân loại"
             android:padding="12dp"
-            android:backgroundTint="@android:color/darker_gray" />
+            android:backgroundTint="@android:color/darker_gray"
+            android:textColor="@android:color/white"/>
+
         <Button
             android:id="@+id/btn_share_certificate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:layout_marginBottom="12dp"
             android:text="Chia sẻ chứng chỉ"
             android:padding="12dp"
-            android:backgroundTint="@android:color/holo_green_dark" />
-
+            android:backgroundTint="@android:color/holo_green_dark"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="12dp"/>
 
         <Button
             android:id="@+id/btn_edit_certificate"
@@ -149,23 +175,27 @@
             android:layout_height="wrap_content"
             android:text="Chỉnh sửa chứng chỉ"
             android:padding="12dp"
-            android:backgroundTint="?attr/colorPrimary" />
+            android:backgroundTint="@android:color/holo_blue_light"
+            android:textColor="@android:color/white"/>
 
         <Button
             android:id="@+id/btn_set_reminder"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:text="Đặt nhắc nhở hết hạn"
             android:padding="12dp"
-            android:backgroundTint="@android:color/holo_orange_dark" />
+            android:backgroundTint="@android:color/holo_orange_dark"
+            android:textColor="@android:color/white"/>
 
         <Button
             android:id="@+id/btn_archive"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="16dp"
             android:text="Archive"
-            android:backgroundTint="@android:color/holo_blue_light" />
+            android:backgroundTint="@android:color/holo_blue_light"
+            android:textColor="@android:color/white"/>
 
         <Button
             android:id="@+id/btn_delete"
@@ -173,7 +203,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="Delete"
-            android:backgroundTint="@android:color/holo_red_light" />
+            android:backgroundTint="@android:color/holo_red_light"
+            android:textColor="@android:color/white"/>
 
     </LinearLayout>
 </ScrollView>

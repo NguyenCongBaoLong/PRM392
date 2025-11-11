@@ -2,6 +2,7 @@ package com.prm392.adapters;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects; // Thêm import Objects
 
 // implements Filterable để hỗ trợ tìm kiếm
 public class CertificateAdapter extends RecyclerView.Adapter<CertificateAdapter.CertificateViewHolder> implements Filterable {
@@ -29,13 +31,20 @@ public class CertificateAdapter extends RecyclerView.Adapter<CertificateAdapter.
     private List<Certificate> filteredCertificateList;
     private final OnItemClickListener listener;
 
+    // Màu mặc định
+    private static final int DEFAULT_DATE_COLOR = Color.BLUE; // Hoặc Color.GRAY nếu muốn
+    private static final int PERMANENT_COLOR = Color.parseColor("#336633"); // Xanh lá đậm
+    private static final int NEAR_EXPIRY_COLOR = Color.parseColor("#FF9800"); // Cam
+    private static final int EXPIRED_COLOR = Color.RED; // Đỏ
+
     public interface OnItemClickListener {
         void onItemClick(Certificate certificate);
     }
 
     public CertificateAdapter(List<Certificate> certificateList, OnItemClickListener listener) {
-        this.originalCertificateList = certificateList;
-        this.filteredCertificateList = new ArrayList<>(certificateList);
+        // Sử dụng Objects.requireNonNull để đảm bảo list đầu vào không null
+        this.originalCertificateList = Objects.requireNonNull(certificateList, "Certificate list must not be null");
+        this.filteredCertificateList = new ArrayList<>(originalCertificateList);
         this.listener = listener;
     }
 
@@ -56,10 +65,11 @@ public class CertificateAdapter extends RecyclerView.Adapter<CertificateAdapter.
 
         public CertificateViewHolder(View itemView) {
             super(itemView);
+            // Đảm bảo R.id khớp với layout item_certificate
             nameTextView = itemView.findViewById(R.id.tv_certificate_name);
             issuerTextView = itemView.findViewById(R.id.tv_issuer);
             expiryDateTextView = itemView.findViewById(R.id.tv_expiration_date);
-            detailButton = itemView.findViewById(R.id.btn_view_detail); // Nút Xem Detail/Edit
+            detailButton = itemView.findViewById(R.id.btn_view_detail);
         }
     }
 
@@ -72,44 +82,49 @@ public class CertificateAdapter extends RecyclerView.Adapter<CertificateAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull CertificateViewHolder holder, int position) {
-        Certificate currentItem = filteredCertificateList.get(position);
-        Context context = holder.itemView.getContext();
+        if (position >= filteredCertificateList.size()) return; // Kiểm tra an toàn
 
-        // 1. Hiển thị dữ liệu
+        Certificate currentItem = filteredCertificateList.get(position);
+
+        // 1. Hiển thị dữ liệu cơ bản, xử lý null an toàn
+        // (Giả định getCertificateName và getIssuingOrganization không trả về null)
         holder.nameTextView.setText(currentItem.getCertificateName());
         holder.issuerTextView.setText("Tổ chức: " + currentItem.getIssuingOrganization());
 
+        // Reset màu về mặc định trước khi kiểm tra logic hạn sử dụng
+        holder.expiryDateTextView.setTextColor(DEFAULT_DATE_COLOR);
+
+        // 2. Logic cảnh báo và hạn sử dụng
         Date expiryDateObj = currentItem.getExpirationDate();
 
-        // 2. Logic cảnh báo và khắc phục lỗi NPE
         if (expiryDateObj != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
             String expiryDate = sdf.format(expiryDateObj);
 
-
             long diff = expiryDateObj.getTime() - System.currentTimeMillis();
             long diffDays = diff / (24 * 60 * 60 * 1000);
 
-            if (diffDays <= 30 && diffDays >= 0) {
-                holder.expiryDateTextView.setText("Hạn: " + expiryDate + " (Sắp hết hạn)");
-                holder.expiryDateTextView.setTextColor(Color.parseColor("#FF9800")); // Cam (Sắp hết hạn)
-            } else if (diffDays < 0) {
+            if (diffDays < 0) {
+                // Đã hết hạn
                 holder.expiryDateTextView.setText("Hạn: " + expiryDate + " (Đã hết hạn)");
-                holder.expiryDateTextView.setTextColor(Color.RED); // Đỏ (Đã hết hạn)
+                holder.expiryDateTextView.setTextColor(EXPIRED_COLOR);
+            } else if (diffDays <= 30) {
+                // Sắp hết hạn (trong vòng 30 ngày)
+                holder.expiryDateTextView.setText("Hạn: " + expiryDate + " (Sắp hết hạn)");
+                holder.expiryDateTextView.setTextColor(NEAR_EXPIRY_COLOR);
             } else {
                 holder.expiryDateTextView.setText("Hạn: " + expiryDate);
-                holder.expiryDateTextView.setTextColor(Color.BLUE);
+                holder.expiryDateTextView.setTextColor(DEFAULT_DATE_COLOR);
             }
         } else {
-            // Chứng chỉ Vĩnh Viễn (NULL Date)
             holder.expiryDateTextView.setText("Vĩnh Viễn");
-            holder.expiryDateTextView.setTextColor(Color.parseColor("#336633"));
-
-        // 3. Xử lý sự kiện click (mở màn hình Detail)
-
+            holder.expiryDateTextView.setTextColor(PERMANENT_COLOR);
         }
+
         holder.detailButton.setOnClickListener(v -> {
-            listener.onItemClick(currentItem);
+            if (listener != null) {
+                listener.onItemClick(currentItem);
+            }
         });
     }
 
@@ -118,7 +133,6 @@ public class CertificateAdapter extends RecyclerView.Adapter<CertificateAdapter.
         return filteredCertificateList.size();
     }
 
-    // --- Filterable implementation ---
     @Override
     public Filter getFilter() {
         return certificateFilter;
@@ -134,17 +148,15 @@ public class CertificateAdapter extends RecyclerView.Adapter<CertificateAdapter.
             if (constraint == null || constraint.length() == 0) {
                 filteredList.addAll(originalCertificateList);
             } else {
-
-                // Chuẩn hóa chuỗi tìm kiếm
                 String filterPattern = normalizeVietnamese(constraint.toString());
 
                 for (Certificate certificate : originalCertificateList) {
 
-                    // Chuẩn hóa dữ liệu để so sánh
+                    if (certificate == null) continue;
+
                     String normalizedName = normalizeVietnamese(certificate.getCertificateName());
                     String normalizedIssuer = normalizeVietnamese(certificate.getIssuingOrganization());
 
-                    // So sánh chuỗi đã được chuẩn hóa (Tìm kiếm chính)
                     if (normalizedName.contains(filterPattern) || normalizedIssuer.contains(filterPattern)) {
                         filteredList.add(certificate);
                     }
@@ -160,7 +172,12 @@ public class CertificateAdapter extends RecyclerView.Adapter<CertificateAdapter.
         protected void publishResults(CharSequence constraint, FilterResults results) {
             filteredCertificateList.clear();
             if (results.values != null) {
-                filteredCertificateList.addAll((List<Certificate>) results.values);
+                // Ép kiểu an toàn hơn bằng cách kiểm tra
+                if (results.values instanceof List) {
+                    filteredCertificateList.addAll((List<Certificate>) results.values);
+                } else {
+                    Log.e("CertificateAdapter", "FilterResults.values không phải là List<Certificate>");
+                }
             }
             notifyDataSetChanged();
         }
