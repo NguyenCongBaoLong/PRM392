@@ -35,10 +35,7 @@ public class HomeActivity extends AppCompatActivity {
         List<Feature> list = new ArrayList<>();
 
         list.add(new Feature("My Certificates", MyCertificateActivity.class));
-        list.add(new Feature("Public Showcase Profile", PublicProfileSetupActivity.class));
-
-        list.add(new Feature("User Profile", LoginActivity.class));
-        list.add(new Feature("Upload New Certificate", UploadCertificateActivity.class));
+        list.add(new Feature("My Account ", MyAccountActivity.class));
 
         return list;
     }

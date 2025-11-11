@@ -1,5 +1,6 @@
 package com.prm392.activity;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,6 +19,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -25,15 +28,17 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.prm392.CloudinaryManager;
 import com.prm392.R;
 import com.squareup.picasso.Picasso;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ProfileActivity extends AppCompatActivity {
     private ImageView imageView;
-    private Button btnSave,btnChangePass;
+    private Button btnSave,btnChangePass,btnBack;
     private EditText etFullName;
     private TextView tvErr;
 
@@ -63,6 +68,7 @@ public class ProfileActivity extends AppCompatActivity {
         btnSave = findViewById(R.id.btnSave);
         etFullName = findViewById(R.id.etFullName);
         btnChangePass = findViewById(R.id.btnChangePassword);
+        btnBack = findViewById(R.id.btn_back);
         tvErr = findViewById(R.id.tvSaveErr);
         LoadData();
 
@@ -77,6 +83,10 @@ public class ProfileActivity extends AppCompatActivity {
             Intent intent = new Intent(ProfileActivity.this, ChangePassActivity.class);
             startActivity(intent);
 
+        });
+        btnBack.setOnClickListener(view->{
+            Intent intent = new Intent(ProfileActivity.this, MyAccountActivity.class);
+            startActivity(intent);
         });
 
     }
@@ -107,17 +117,46 @@ public class ProfileActivity extends AppCompatActivity {
 
         // Nếu người dùng chọn ảnh mới
         if (selectedImageUri != null) {
-            String localUri = selectedImageUri.toString();
-            updates.put("avatarUri", localUri); // chỉ lưu URI local
 
-            userRef.set(updates, SetOptions.merge())
-                    .addOnSuccessListener(aVoid ->
-                            Toast.makeText(this, "Cập nhật thành công!", Toast.LENGTH_SHORT).show()
-                    )
-                    .addOnFailureListener(e ->
-                            Toast.makeText(this, "Lỗi lưu dữ liệu: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+
+            new Thread(() -> {
+                try {
+                    // Chuẩn bị upload
+                    InputStream inputStream = getContentResolver().openInputStream(selectedImageUri);
+
+                    Map options = ObjectUtils.asMap(
+                            "upload_preset", "prm392",
+                            "resource_type", "image"
                     );
-        } else {
+
+                    // Upload lên Cloudinary
+                    Cloudinary cloudinary = CloudinaryManager.getInstance();
+                    Map uploadResult = cloudinary.uploader().upload(inputStream, options);
+                    String imageUrl = uploadResult.get("secure_url").toString();
+
+                    // Lưu link lên Firestore
+                    updates.put("avatarUri", imageUrl);
+
+                    runOnUiThread(() -> {
+                        userRef.set(updates, SetOptions.merge())
+                                .addOnSuccessListener(aVoid -> {
+
+                                    Toast.makeText(this, "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
+                                })
+                                .addOnFailureListener(e -> {
+
+                                    Toast.makeText(this, "Lỗi lưu dữ liệu: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                });
+                    });
+                } catch (Exception e) {
+                    runOnUiThread(() -> {
+
+                        Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+                }
+            }).start();
+        }
+        else {
             // Chỉ cập nhật họ tên
             userRef.set(updates, SetOptions.merge())
                     .addOnSuccessListener(aVoid ->
@@ -145,7 +184,7 @@ public class ProfileActivity extends AppCompatActivity {
             docRef.get().addOnSuccessListener(documentSnapshot -> {
                 if (documentSnapshot.exists()) {
                     String fullName = documentSnapshot.getString("fullName");
-                    String imageUrl = documentSnapshot.getString("avatarUrl"); // nếu có ảnh trong Firestore
+                    String imageUrl = documentSnapshot.getString("avatarUri"); // nếu có ảnh trong Firestore
 
                     if (fullName != null && !fullName.isEmpty()) {
                         etFullName.setText(fullName);
