@@ -150,11 +150,11 @@ public class UploadCertificateActivity extends AppCompatActivity {
     }
 
     private void saveCertificate() {
-        String name = etCertificateName.getText().toString().trim();
-        String organization = etIssuingOrganization.getText().toString().trim();
+        String certificateName = etCertificateName.getText().toString().trim();
+        String issuingOrganization = etIssuingOrganization.getText().toString().trim();
         String credentialId = etCredentialId.getText().toString().trim();
 
-        if (name.isEmpty() || organization.isEmpty()) {
+        if (certificateName.isEmpty() || issuingOrganization.isEmpty()) {
             Toast.makeText(this, "Please fill required fields", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -164,10 +164,10 @@ public class UploadCertificateActivity extends AppCompatActivity {
             return;
         }
 
-        uploadToFirebase(name, organization, credentialId);
+        uploadToFirebase(certificateName, issuingOrganization, credentialId);
     }
 
-    private void uploadToFirebase(String name, String organization, String credentialId) {
+    private void uploadToFirebase(String certificateName, String issuingOrganization, String credentialId) {
         showLoading(true);
 
         String userId = FirebaseAuth.getInstance().getUid();
@@ -187,8 +187,8 @@ public class UploadCertificateActivity extends AppCompatActivity {
 
                     // Tạo map metadata thay vì object, dễ lưu Firestore
                     Map<String, Object> cert = new HashMap<>();
-                    cert.put("name", name);
-                    cert.put("organization", organization);
+                    cert.put("certificateName", certificateName);
+                    cert.put("issuingOrganization", issuingOrganization);
                     cert.put("credentialId", credentialId);
                     cert.put("issueDate", issueCalendar.getTime());
                     cert.put("expirationDate", expirationCalendar.getTime());
