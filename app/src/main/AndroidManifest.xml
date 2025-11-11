@@ -16,20 +16,36 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication"
         tools:targetApi="31">
+
+        <activity
+            android:name=".activity.PublicProfileViewerActivity"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="https"
+                    android:host="prm392.com"
+                    android:pathPrefix="/profile/" />
+            </intent-filter>
+
+        </activity>
+
         <activity
             android:name=".activity.MyAccountActivity"
             android:exported="false" />
         <activity
             android:name=".activity.ReportActivity"
-            android:exported="false">
-
-        </activity>
+            android:exported="false"></activity>
         <activity
             android:name=".activity.ChangePassActivity"
             android:exported="false" />
         <activity
             android:name=".activity.ProfileActivity"
-            android:exported="false"></activity>
+            android:exported="false" />
         <activity
             android:name=".activity.LoginActivity"
             android:exported="true">
@@ -41,12 +57,10 @@
         </activity>
         <activity
             android:name=".activity.PublicProfileSetupActivity"
-            android:exported="false"></activity>
+            android:exported="false" />
         <activity
             android:name=".activity.RegisterActivity"
-            android:exported="false">
-
-        </activity>
+            android:exported="false"></activity>
         <activity
             android:name=".activity.MyCertificateActivity"
             android:exported="false" />

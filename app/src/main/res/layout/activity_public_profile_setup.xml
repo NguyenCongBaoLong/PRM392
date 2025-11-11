@@ -45,13 +45,22 @@
         android:visibility="gone"
         android:layout_marginBottom="16dp"/>
 
-
     <Button
         android:id="@+id/btn_generate_public_link"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Tạo Liên kết Công khai"
+        android:text="Tạo &amp; Chia sẻ Liên kết Công khai"
         android:backgroundTint="@android:color/holo_blue_dark"
         android:textColor="@android:color/white"/>
+
+    <Button
+        android:id="@+id/btn_view_public_link"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Xem Hồ sơ Công khai Trong Ứng dụng"
+        android:backgroundTint="@android:color/holo_green_dark"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"/>
 
 </LinearLayout>
