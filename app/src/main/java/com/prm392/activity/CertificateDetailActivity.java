@@ -21,6 +21,8 @@ import android.widget.Toast;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.prm392.R;
 import com.prm392.model.Certificate;
 
@@ -34,7 +36,11 @@ import java.util.concurrent.TimeUnit;
 public class CertificateDetailActivity extends AppCompatActivity {
 
     private Certificate currentCertificate;
-    private Button btnBack, btnEdit, btnShare, btnSetReminder;
+    private Button btnBack, btnEdit, btnShare, btnSetReminder, btnDelete, btnArchive;
+
+    //db
+    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
     // 🔥 KHAI BÁO CHO TAGS
     private ChipGroup chipGroupTags;
@@ -71,6 +77,8 @@ public class CertificateDetailActivity extends AppCompatActivity {
         btnEdit = findViewById(R.id.btn_edit_certificate);
         btnShare = findViewById(R.id.btn_share_certificate);
         btnSetReminder = findViewById(R.id.btn_set_reminder);
+        btnDelete = findViewById(R.id.btn_delete);
+        btnArchive = findViewById(R.id.btn_archive);
 
         // 🔥 ÁNH XẠ CHO TAGS
         chipGroupTags = findViewById(R.id.chip_group_tags);
@@ -92,6 +100,10 @@ public class CertificateDetailActivity extends AppCompatActivity {
 
         // 🔥 XỬ LÝ CLICK THÊM TAG
         btnAddTag.setOnClickListener(v -> showAddTagDialog());
+
+        // Delete & Archive
+        btnDelete.setOnClickListener(v -> showConfirmDialog("Delete", true));
+        btnArchive.setOnClickListener(v -> showConfirmDialog("Archive", false));
     }
 
     // Hàm hiển thị dữ liệu chi tiết lên giao diện
@@ -408,5 +420,32 @@ public class CertificateDetailActivity extends AppCompatActivity {
         if (currentCertificate != null) {
             displayDetails(currentCertificate);
         }
+    }
+
+    private void showConfirmDialog(String action, boolean isDelete) {
+        new AlertDialog.Builder(this)
+                .setTitle(action + " Certificate")
+                .setMessage("Are you sure you want to " + action.toLowerCase() + " this certificate?")
+                .setPositiveButton("Yes", (dialog, which) -> {
+                    if (isDelete) {
+                        db.collection("certifications").document(currentCertificate.getId()).delete()
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(this, "Deleted successfully", Toast.LENGTH_SHORT).show();
+                                    setResult(RESULT_OK);  // Thêm: Thông báo cho MyCertificateActivity reload
+                                    finish();
+                                })
+                                .addOnFailureListener(e -> Toast.makeText(this, "Error deleting: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                    } else {
+                        db.collection("certifications").document(currentCertificate.getId()).update("isArchived", true)
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(this, "Archived successfully", Toast.LENGTH_SHORT).show();
+                                    setResult(RESULT_OK);  // Thêm: Thông báo cho MyCertificateActivity reload
+                                    finish();
+                                })
+                                .addOnFailureListener(e -> Toast.makeText(this, "Error archiving: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                    }
+                })
+                .setNegativeButton("No", null)
+                .show();
     }
 }

@@ -159,5 +159,21 @@
             android:padding="12dp"
             android:backgroundTint="@android:color/holo_orange_dark" />
 
+        <Button
+            android:id="@+id/btn_archive"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Archive"
+            android:backgroundTint="@android:color/holo_blue_light" />
+
+        <Button
+            android:id="@+id/btn_delete"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Delete"
+            android:backgroundTint="@android:color/holo_red_light" />
+
     </LinearLayout>
 </ScrollView>

@@ -15,8 +15,11 @@ public class Certificate implements Serializable {
     private String fileName;
     private String userId;
     private List<String> tags;
+    private boolean isArchived;
 
-    public Certificate() {}
+    public Certificate() {
+        this.isArchived = false;  // Default không archived
+    }
 
     public Certificate(String certificateId, String certificateName, String issuingOrganization,
                        String credentialId, Date issueDate, Date expirationDate,
@@ -30,6 +33,7 @@ public class Certificate implements Serializable {
         this.fileUrl = fileUrl;
         this.fileName = fileName;
         this.userId = userId;
+        this.isArchived = false;  // Default
     }
     public Certificate( String certificateName, String issuingOrganization,
                         String credentialId, Date issueDate, Date expirationDate,
@@ -43,6 +47,7 @@ public class Certificate implements Serializable {
         this.fileUrl = fileUrl;
         this.fileName = fileName;
         this.userId = userId;
+        this.isArchived = false;  // Default
     }
 
     // GETTERS & SETTERS
@@ -73,4 +78,6 @@ public class Certificate implements Serializable {
 
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
+    public boolean isArchived() { return isArchived; }
+    public void setArchived(boolean archived) { isArchived = archived; }
 }
