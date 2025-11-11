@@ -51,6 +51,7 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     implementation ("com.squareup.picasso:picasso:2.8")
     implementation("androidx.work:work-runtime:2.8.1")
+    implementation ("com.cloudinary:cloudinary-android:2.3.1")
 
 
 }
