@@ -8,13 +8,19 @@ import android.view.View;
 import android.widget.*;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.prm392.R;
 import com.prm392.model.Certificate;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class UploadCertificateActivity extends AppCompatActivity {
 
@@ -29,6 +35,7 @@ public class UploadCertificateActivity extends AppCompatActivity {
     private SimpleDateFormat dateFormatter;
 
     private StorageReference storageReference;
+    private FirebaseFirestore firestore;
     private static final int FILE_PICKER_REQUEST_CODE = 1001;
 
     @Override
@@ -62,6 +69,7 @@ public class UploadCertificateActivity extends AppCompatActivity {
 
     private void setupFirebase() {
         storageReference = FirebaseStorage.getInstance().getReference();
+        firestore = FirebaseFirestore.getInstance();   // Thêm Firestore instance
     }
 
     private void setupDatePickers() {
@@ -123,7 +131,7 @@ public class UploadCertificateActivity extends AppCompatActivity {
     private String getFileName(Uri uri) {
         String result = null;
         if (uri.getScheme().equals("content")) {
-            try (var cursor = getContentResolver().query(uri, null, null, null, null)) {
+            try (android.database.Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
                 if (cursor != null && cursor.moveToFirst()) {
                     result = cursor.getString(cursor.getColumnIndexOrThrow("_display_name"));
                 }
@@ -162,25 +170,46 @@ public class UploadCertificateActivity extends AppCompatActivity {
     private void uploadToFirebase(String name, String organization, String credentialId) {
         showLoading(true);
 
+        String userId = FirebaseAuth.getInstance().getUid();
+        if (userId == null) {
+            showLoading(false);
+            Toast.makeText(this, "User not authenticated!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String fileExtension = selectedFileName.substring(selectedFileName.lastIndexOf("."));
-        String fileName = "certificates/" + System.currentTimeMillis() + fileExtension;
+        String fileName = "certificates/" + userId + "/" + System.currentTimeMillis() + fileExtension;
 
         StorageReference fileRef = storageReference.child(fileName);
 
         fileRef.putFile(selectedFileUri)
-                .addOnSuccessListener(taskSnapshot -> {
-                    fileRef.getDownloadUrl().addOnSuccessListener(downloadUri -> {
-                        Certificate certificate = new Certificate(
-                                name, organization, credentialId,
-                                issueCalendar.getTime(), expirationCalendar.getTime(),
-                                downloadUri.toString(), selectedFileName, "current_user"
-                        );
+                .addOnSuccessListener(taskSnapshot -> fileRef.getDownloadUrl().addOnSuccessListener(downloadUri -> {
 
-                        showLoading(false);
-                        Toast.makeText(this, "Certificate uploaded successfully!", Toast.LENGTH_LONG).show();
-                        finish();
-                    });
-                })
+                    // Tạo map metadata thay vì object, dễ lưu Firestore
+                    Map<String, Object> cert = new HashMap<>();
+                    cert.put("name", name);
+                    cert.put("organization", organization);
+                    cert.put("credentialId", credentialId);
+                    cert.put("issueDate", issueCalendar.getTime());
+                    cert.put("expirationDate", expirationCalendar.getTime());
+                    cert.put("fileUrl", downloadUri.toString());
+                    cert.put("fileName", selectedFileName);
+                    cert.put("userId", userId);
+
+                    // Lưu lên Firestore
+                    firestore.collection("certificates")
+                            .add(cert)
+                            .addOnSuccessListener(documentReference -> {
+                                showLoading(false);
+                                Toast.makeText(this, "Certificate uploaded & saved to Firestore!", Toast.LENGTH_LONG).show();
+                                finish();
+                            })
+                            .addOnFailureListener(e -> {
+                                showLoading(false);
+                                Toast.makeText(this, "Failed to save certificate to Firestore: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            });
+
+                }))
                 .addOnFailureListener(e -> {
                     showLoading(false);
                     Toast.makeText(this, "Upload failed: " + e.getMessage(), Toast.LENGTH_LONG).show();

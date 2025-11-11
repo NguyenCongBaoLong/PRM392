@@ -20,40 +20,36 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+
 public class MyCertificateActivity extends AppCompatActivity {
 
     private static final int EDIT_CERTIFICATE_REQUEST_CODE = 1;
-
     private RecyclerView recyclerView;
     private CertificateAdapter certificateAdapter;
     private List<Certificate> certificateList;
-
-    // Khai báo SearchView và Button Filter
     private SearchView searchView;
     private Button btnFilter;
     private Button btnBack;
+    private Button btnUploadNew; // thêm nút
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_certificate);
 
-        // 1. Ánh xạ các View
         recyclerView = findViewById(R.id.recycler_view_certificates);
-        searchView = findViewById(R.id.search_view_certificate); // Lấy SearchView từ XML
+        searchView = findViewById(R.id.search_view_certificate);
         btnFilter = findViewById(R.id.btn_filter);
         btnBack = findViewById(R.id.btn_back);
+        btnUploadNew = findViewById(R.id.btn_upload_new); // ánh xạ
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
         certificateList = new ArrayList<>();
-        loadCertificateList(); // Tải dữ liệu ban đầu
+        loadCertificateList();
 
-        // 2. Khởi tạo Adapter
         certificateAdapter = new CertificateAdapter(certificateList, new CertificateAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Certificate certificate) {
-                // Mở màn hình Chi tiết (Detail)
                 Intent intent = new Intent(MyCertificateActivity.this, CertificateDetailActivity.class);
                 intent.putExtra("SELECTED_CERTIFICATE", certificate);
                 startActivityForResult(intent, EDIT_CERTIFICATE_REQUEST_CODE);
@@ -61,17 +57,21 @@ public class MyCertificateActivity extends AppCompatActivity {
         });
         recyclerView.setAdapter(certificateAdapter);
 
-        // 3. Thiết lập Search (QUAN TRỌNG)
         setupSearchView();
 
-        // 4. Thiết lập sự kiện cho nút Lọc (ví dụ: Toast)
         btnFilter.setOnClickListener(v -> {
             Toast.makeText(MyCertificateActivity.this, "Chức năng Lọc đang được phát triển...", Toast.LENGTH_SHORT).show();
         });
-        btnBack.setOnClickListener(v -> {
-            finish(); // Đóng activity và quay lại
+        btnBack.setOnClickListener(v -> finish());
+
+        // Sự kiện chuyển sang Upload
+        btnUploadNew.setOnClickListener(v -> {
+            Intent intent = new Intent(MyCertificateActivity.this, UploadCertificateActivity.class);
+            startActivity(intent);
         });
     }
+
+
     @Override
     public void onBackPressed() {
         super.onBackPressed();
