@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/tv_display_cert_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tên Chứng chỉ"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/colorPrimary"
+            android:layout_marginBottom="4dp"/>
+
+        <TextView
+            android:id="@+id/tv_display_cert_organization"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tổ chức: ABC Company"
+            android:textSize="14sp"
+            android:layout_marginBottom="2dp"/>
+
+        <TextView
+            android:id="@+id/tv_display_cert_credential_id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Mã: XYZ123"
+            android:textSize="14sp"
+            android:layout_marginBottom="2dp"/>
+
+        <TextView
+            android:id="@+id/tv_display_cert_expiry"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Hết hạn: 31/12/2025"
+            android:textSize="14sp"
+            android:textColor="@android:color/holo_red_dark"/>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

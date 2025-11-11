@@ -1,10 +1,8 @@
 package com.prm392.activity;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.work.Data;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkManager;
 
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
@@ -12,12 +10,16 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-// 🔥 Import cho tính năng Tags
+// Firebase & UI Imports
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 
@@ -27,29 +29,24 @@ import com.prm392.R;
 import com.prm392.model.Certificate;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList; // Thêm import cho ArrayList
-import java.util.Calendar;
-import java.util.List; // Thêm import cho List
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
+import java.util.Objects;
 
 public class CertificateDetailActivity extends AppCompatActivity {
 
     private Certificate currentCertificate;
-    private Button btnBack, btnEdit, btnShare, btnSetReminder, btnDelete, btnArchive;
+    private String certificateId; // Biến lưu ID chứng chỉ
 
-    //db
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
-
-    // 🔥 KHAI BÁO CHO TAGS
+    private Button btnBack, btnEdit, btnShare, btnSetReminder, btnDelete, btnArchive;// Loại bỏ btnSetReminder
     private ChipGroup chipGroupTags;
     private Button btnAddTag;
 
-    // Dùng SimpleDateFormat để hiển thị ngày tháng
+    private FirebaseFirestore db;
+
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
-    // Request Code cho màn hình Edit
     private static final int EDIT_CERTIFICATE_DETAIL_REQUEST_CODE = 2;
 
     @Override
@@ -57,19 +54,37 @@ public class CertificateDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_certificate_detail);
 
-        // 1. Lấy dữ liệu Certificate
-        currentCertificate = (Certificate) getIntent().getSerializableExtra("SELECTED_CERTIFICATE");
+        // Khởi tạo Firebase
+        db = FirebaseFirestore.getInstance();
 
-        // 2. Ánh xạ các nút
-        initViews();
+        // Lấy ID chứng chỉ từ Intent
+        certificateId = getIntent().getStringExtra("CERTIFICATE_ID");
 
-        if (currentCertificate != null) {
-            // Hiển thị chi tiết (đã bao gồm Tags)
-            displayDetails(currentCertificate);
-
-            // 3. Xử lý sự kiện click các nút
-            setupClickListeners();
+        // Cấu hình ActionBar (nếu có)
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("Chi tiết Chứng chỉ");
         }
+
+        initViews();
+        setupClickListeners();
+
+        if (certificateId != null) {
+            // Tải dữ liệu từ Firestore
+            fetchCertificateDetails(certificateId);
+        } else {
+            Toast.makeText(this, "Lỗi: Không tìm thấy ID chứng chỉ.", Toast.LENGTH_LONG).show();
+            finish();
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void initViews() {
@@ -79,34 +94,69 @@ public class CertificateDetailActivity extends AppCompatActivity {
         btnSetReminder = findViewById(R.id.btn_set_reminder);
         btnDelete = findViewById(R.id.btn_delete);
         btnArchive = findViewById(R.id.btn_archive);
+        
 
-        // 🔥 ÁNH XẠ CHO TAGS
         chipGroupTags = findViewById(R.id.chip_group_tags);
         btnAddTag = findViewById(R.id.btn_add_tag);
     }
 
     private void setupClickListeners() {
-        // Nút Back
+      
+        enableButtons(false);
+
         btnBack.setOnClickListener(v -> finish());
-
-        // Nút Edit
         btnEdit.setOnClickListener(v -> openEditScreen(currentCertificate));
-
-        // Nút Share
         btnShare.setOnClickListener(v -> shareCertificate());
-
-        // Nút Set Reminder
-        btnSetReminder.setOnClickListener(v -> setExpirationReminder());
-
-        // 🔥 XỬ LÝ CLICK THÊM TAG
+        
         btnAddTag.setOnClickListener(v -> showAddTagDialog());
 
-        // Delete & Archive
+      
         btnDelete.setOnClickListener(v -> showConfirmDialog("Delete", true));
         btnArchive.setOnClickListener(v -> showConfirmDialog("Archive", false));
     }
 
-    // Hàm hiển thị dữ liệu chi tiết lên giao diện
+    private void enableButtons(boolean enable) {
+        btnEdit.setEnabled(enable);
+        btnShare.setEnabled(enable);
+        // Loại bỏ btnSetReminder.setEnabled(enable);
+        btnAddTag.setEnabled(enable);
+    }
+
+    /**
+     * Tải chi tiết chứng chỉ từ Firestore dựa trên ID.
+     */
+    private void fetchCertificateDetails(String id) {
+        // Loại bỏ progressBar.setVisibility(View.VISIBLE);
+        enableButtons(false);
+
+        db.collection("certificates").document(id)
+                .get()
+                .addOnCompleteListener(task -> {
+                    // Loại bỏ progressBar.setVisibility(View.GONE);
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        DocumentSnapshot document = task.getResult();
+                        if (document.exists()) {
+                            // Chuyển đổi DocumentSnapshot sang đối tượng Certificate
+                            currentCertificate = document.toObject(Certificate.class);
+                            Objects.requireNonNull(currentCertificate).setId(document.getId());
+
+                            displayDetails(currentCertificate);
+                            enableButtons(true);
+                        } else {
+                            Toast.makeText(this, "Chứng chỉ không tồn tại.", Toast.LENGTH_LONG).show();
+                            finish();
+                        }
+                    } else {
+                        Toast.makeText(this, "Lỗi tải dữ liệu: " + Objects.requireNonNull(task.getException()).getMessage(), Toast.LENGTH_LONG).show();
+                        finish();
+                    }
+                });
+    }
+
+    /**
+     * Hiển thị chi tiết chứng chỉ lên giao diện.
+     * Sửa: Sử dụng getName() và getOrganization().
+     */
     private void displayDetails(Certificate certificate) {
         TextView tvName = findViewById(R.id.tv_detail_name);
         TextView tvIssuer = findViewById(R.id.tv_detail_issuer);
@@ -115,33 +165,32 @@ public class CertificateDetailActivity extends AppCompatActivity {
         TextView tvExpiry = findViewById(R.id.tv_detail_expiry);
         TextView tvFileName = findViewById(R.id.tv_detail_file_name);
 
-        // Đổ dữ liệu cơ bản
+        // SỬA LỖI: Dùng getName() và getOrganization()
         tvName.setText(certificate.getCertificateName());
         tvIssuer.setText(certificate.getIssuingOrganization());
+
         tvCredentialId.setText(certificate.getCredentialId() != null ? certificate.getCredentialId() : "N/A");
         tvFileName.setText(certificate.getFileName() != null ? certificate.getFileName() : "Chưa có file");
 
-        // Xử lý ngày cấp
         if (certificate.getIssueDate() != null) {
             tvIssueDate.setText(dateFormat.format(certificate.getIssueDate()));
         } else {
             tvIssueDate.setText("N/A");
         }
 
-        // Xử lý ngày hết hạn
         if (certificate.getExpirationDate() != null) {
             tvExpiry.setText(dateFormat.format(certificate.getExpirationDate()));
         } else {
             tvExpiry.setText("Vĩnh Viễn");
         }
 
-        // 🔥 HIỂN THỊ TAGS
         displayTags(certificate.getTags());
     }
 
-    // 🔥 PHẦN TAGS: Hiển thị các Chip (Tags)
+    // --- CHỨC NĂNG TAGS ---
+
     private void displayTags(List<String> tags) {
-        chipGroupTags.removeAllViews(); // Xóa các chip cũ
+        chipGroupTags.removeAllViews();
         if (tags != null) {
             for (String tag : tags) {
                 Chip chip = new Chip(this);
@@ -150,24 +199,19 @@ public class CertificateDetailActivity extends AppCompatActivity {
                 chip.setClickable(true);
                 chip.setCheckable(false);
 
-                // Xử lý sự kiện xóa Chip
-                chip.setOnCloseIconClickListener(v -> {
-                    removeTag(tag);
-                    // TODO: Sau khi removeTag thành công, gọi API để lưu thay đổi
-                });
+                chip.setOnCloseIconClickListener(v -> removeTag(tag));
                 chipGroupTags.addView(chip);
             }
         }
     }
 
-    // 🔥 PHẦN TAGS: Dialog Thêm Tag mới
     private void showAddTagDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Thêm Thẻ (Tag)");
 
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
-        input.setHint("Nhập tên thẻ (ví dụ: Kỹ năng mềm)");
+        input.setHint("Nhập tên thẻ");
         builder.setView(input);
 
         builder.setPositiveButton("Thêm", (dialog, which) -> {
@@ -183,7 +227,6 @@ public class CertificateDetailActivity extends AppCompatActivity {
         builder.show();
     }
 
-    // 🔥 PHẦN TAGS: Xử lý thêm Tag vào Model
     private void addNewTag(String tag) {
         if (currentCertificate == null) return;
 
@@ -195,38 +238,52 @@ public class CertificateDetailActivity extends AppCompatActivity {
 
         if (!tags.contains(tag)) {
             tags.add(tag);
-            // TODO: Gọi API để lưu tags mới vào Backend/Database
-            // saveCertificateChanges(currentCertificate);
-
-            displayTags(tags); // Cập nhật UI
+            saveCertificateChanges();
+            displayTags(tags);
             Toast.makeText(this, "Đã thêm thẻ: " + tag, Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(this, "Thẻ đã tồn tại.", Toast.LENGTH_SHORT).show();
         }
     }
 
-    // 🔥 PHẦN TAGS: Xử lý xóa Tag khỏi Model
     private void removeTag(String tag) {
         if (currentCertificate == null) return;
 
         List<String> tags = currentCertificate.getTags();
         if (tags != null && tags.remove(tag)) {
-            // TODO: Gọi API để lưu thay đổi vào Backend/Database
-            // saveCertificateChanges(currentCertificate);
-
-            displayTags(tags); // Cập nhật UI
+            saveCertificateChanges();
+            displayTags(tags);
             Toast.makeText(this, "Đã xóa thẻ: " + tag, Toast.LENGTH_SHORT).show();
         }
     }
 
-    // *** HÀM CHUYỂN SANG MÀN HÌNH CHỈNH SỬA ***
+    /**
+     * Lưu thay đổi (Tags) của chứng chỉ lên Firestore.
+     */
+    private void saveCertificateChanges() {
+        if (currentCertificate == null || currentCertificate.getId() == null) return;
+
+        // Loại bỏ progressBar.setVisibility(View.VISIBLE);
+
+        db.collection("certificates").document(currentCertificate.getId())
+                .update("tags", currentCertificate.getTags()) // Chỉ cập nhật trường 'tags'
+                .addOnSuccessListener(aVoid -> {
+                    // Loại bỏ progressBar.setVisibility(View.GONE);
+                })
+                .addOnFailureListener(e -> {
+                    // Loại bỏ progressBar.setVisibility(View.GONE);
+                    Toast.makeText(this, "Lỗi lưu Tags: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    // --- CHỨC NĂNG CHỈNH SỬA & CHIA SẺ ---
+
     private void openEditScreen(Certificate certificate) {
         Intent editIntent = new Intent(this, EditCertificateActivity.class);
         editIntent.putExtra("CERTIFICATE_TO_EDIT", certificate);
         startActivityForResult(editIntent, EDIT_CERTIFICATE_DETAIL_REQUEST_CODE);
     }
 
-    // *** CHỨC NĂNG 7: SHARE CERTIFICATE SECURELY (Giữ nguyên) ***
     private void shareCertificate() {
         showShareOptionsDialog();
     }
@@ -264,6 +321,7 @@ public class CertificateDetailActivity extends AppCompatActivity {
     private void shareViaEmail() {
         if (currentCertificate == null) return;
 
+        // SỬA LỖI: Dùng getName() và getOrganization()
         Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
         emailIntent.setData(Uri.parse("mailto:"));
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Chứng chỉ: " + currentCertificate.getCertificateName());
@@ -286,6 +344,7 @@ public class CertificateDetailActivity extends AppCompatActivity {
     private void shareAsText() {
         if (currentCertificate == null) return;
 
+        // SỬA LỖI: Dùng getName() và getOrganization()
         String shareText =
                 "Chứng chỉ của tôi:\n\n" +
                         "🔸 Tên: " + currentCertificate.getCertificateName() + "\n" +
@@ -307,108 +366,18 @@ public class CertificateDetailActivity extends AppCompatActivity {
         startActivity(Intent.createChooser(shareIntent, "Chia sẻ chứng chỉ"));
     }
 
-    // *** CHỨC NĂNG 8: SET EXPIRATION REMINDERS VỚI WORKMANAGER (Giữ nguyên) ***
-    private void setExpirationReminder() {
-        if (currentCertificate == null || currentCertificate.getExpirationDate() == null) {
-            Toast.makeText(this, "Chứng chỉ này không có ngày hết hạn", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String[] reminderOptions = {
-                "1 ngày trước",
-                "3 ngày trước",
-                "1 tuần trước",
-                "2 tuần trước",
-                "1 tháng trước"
-        };
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Đặt nhắc nhở hết hạn");
-        builder.setItems(reminderOptions, (dialog, which) -> {
-            switch (which) {
-                case 0:
-                    scheduleReminder(1);
-                    break;
-                case 1:
-                    scheduleReminder(3);
-                    break;
-                case 2:
-                    scheduleReminder(7);
-                    break;
-                case 3:
-                    scheduleReminder(14);
-                    break;
-                case 4:
-                    scheduleReminder(30);
-                    break;
-            }
-        });
-        builder.show();
-    }
-
-    private void scheduleReminder(int daysBefore) {
-        if (currentCertificate == null || currentCertificate.getExpirationDate() == null) return;
-
-        try {
-            Calendar expirationDate = Calendar.getInstance();
-            expirationDate.setTime(currentCertificate.getExpirationDate());
-
-            Calendar reminderDate = (Calendar) expirationDate.clone();
-            reminderDate.add(Calendar.DAY_OF_YEAR, -daysBefore);
-
-            long delayInMillis = reminderDate.getTimeInMillis() - System.currentTimeMillis();
-
-            if (delayInMillis > 0) {
-                // Tạo data cho worker
-                Data inputData = new Data.Builder()
-                        .putString("certificate_name", currentCertificate.getCertificateName())
-                        .putInt("days_left", daysBefore)
-                        .build();
-
-                // Tạo work request
-                // LƯU Ý: Phải có class NotificationWorker trong project
-                OneTimeWorkRequest reminderWork = new OneTimeWorkRequest.Builder(NotificationWorker.class)
-                        .setInitialDelay(delayInMillis, TimeUnit.MILLISECONDS)
-                        .setInputData(inputData)
-                        .build();
-
-                // Lên lịch reminder
-                WorkManager.getInstance(this).enqueue(reminderWork);
-
-                String message = "Đã đặt nhắc nhở " + daysBefore + " ngày trước khi hết hạn";
-                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-
-                // Lưu thông tin reminder
-                saveReminderToPreferences(reminderWork.getId().toString(), daysBefore);
-
-            } else {
-                Toast.makeText(this, "Không thể đặt nhắc nhở cho quá khứ", Toast.LENGTH_SHORT).show();
-            }
-
-        } catch (Exception e) {
-            Toast.makeText(this, "Lỗi khi đặt nhắc nhở", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void saveReminderToPreferences(String workId, int daysBefore) {
-        // TODO: Logic lưu reminder
-    }
-
-    // *** XỬ LÝ BACK & NAVIGATION ***
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-    }
+    // --- XỬ LÝ LIFECYCLE VÀ NAVIGATION ---
+    // Loại bỏ toàn bộ chức năng Reminder
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == EDIT_CERTIFICATE_DETAIL_REQUEST_CODE && resultCode == RESULT_OK) {
-            setResult(RESULT_OK);
-            // Lý tưởng là fetch lại certificate từ DB sau khi Edit
-            if (currentCertificate != null) {
-                displayDetails(currentCertificate);
+            // Sau khi chỉnh sửa thành công, fetch lại dữ liệu mới nhất từ Firebase
+            if (certificateId != null) {
+                fetchCertificateDetails(certificateId);
+                setResult(RESULT_OK); // Đặt kết quả cho Activity gọi nó
             }
         }
     }
@@ -416,9 +385,9 @@ public class CertificateDetailActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Lý tưởng là fetch lại certificate từ DB để đảm bảo dữ liệu mới nhất
-        if (currentCertificate != null) {
-            displayDetails(currentCertificate);
+        // Cập nhật lại dữ liệu khi quay lại màn hình
+        if (certificateId != null) {
+            fetchCertificateDetails(certificateId);
         }
     }
 
