@@ -115,6 +115,7 @@ public class PublicProfileSetupActivity extends AppCompatActivity {
 
         db.collection("certificates")
                 .whereEqualTo("userId", userId)
+                .whereEqualTo("isArchived", false)
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
