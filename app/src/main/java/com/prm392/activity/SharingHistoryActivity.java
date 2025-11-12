@@ -1,5 +1,7 @@
 package com.prm392.activity;
 
+import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -33,6 +35,7 @@ public class SharingHistoryActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
 
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,7 +56,11 @@ public class SharingHistoryActivity extends AppCompatActivity {
         setupSortSpinner();
         loadSharingHistory();
 
-        btnBack.setOnClickListener(v -> finish());
+        btnBack.setOnClickListener(v -> {
+            Intent intent = new Intent(SharingHistoryActivity.this, MyAccountActivity.class);
+            startActivity(intent);
+            finish();  // Optional: Closes SharingHistoryActivity to clean up the stack
+        });
     }
 
     private void setupSortSpinner() {
