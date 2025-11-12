@@ -120,8 +120,8 @@ public class RegisterActivity extends AppCompatActivity {
                                                     if (tokenTask.isSuccessful()) {
                                                         String jwtToken = tokenTask.getResult().getToken();
 
-                                                        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-                                                        prefs.edit().putString("jwt_token", jwtToken).apply();
+                                                        SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
+                                                        prefs.edit().putString("auth_token", jwtToken).apply();
 
                                                         Intent intent = new Intent(RegisterActivity.this, HomeActivity.class);
                                                         startActivity(intent);

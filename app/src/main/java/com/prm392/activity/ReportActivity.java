@@ -5,9 +5,11 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.pdf.PdfDocument;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,8 +17,12 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.prm392.R;
 import com.prm392.model.Certificate;
 
@@ -32,12 +38,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 public class ReportActivity extends AppCompatActivity {
 
     private Spinner spinnerFormat;
     private Button btnExport,btnBack;
     private TextView tvStatus;
+    private FirebaseAuth auth;
+    FirebaseFirestore db ;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,6 +58,9 @@ public class ReportActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        auth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null){
             Intent intent = new Intent(ReportActivity.this,LoginActivity.class);
@@ -60,7 +73,20 @@ public class ReportActivity extends AppCompatActivity {
         tvStatus = findViewById(R.id.tvStatus);
         btnExport.setOnClickListener(v -> {
             String format = spinnerFormat.getSelectedItem().toString();
-            List<Certificate> data = createMockData();
+            List<Certificate> data = new ArrayList<Certificate>();
+            loadCertificateList()
+                    .addOnSuccessListener(certificates -> {
+                        data.clear();
+                        data.addAll(certificates);
+                        Toast.makeText(this, "tải chứng chỉ thành công ", Toast.LENGTH_LONG).show();
+
+                    })
+                    .addOnFailureListener(e ->
+                            Toast.makeText(this, "Không thể tải chứng chỉ: " + e.getMessage(), Toast.LENGTH_LONG).show()
+                    );
+
+
+
 
             if (format.equalsIgnoreCase("PDF")) {
                 exportToPDF(data);
@@ -77,34 +103,33 @@ public class ReportActivity extends AppCompatActivity {
     }
 
     // Tạo dữ liệu giả định
-    private List<Certificate> createMockData() {
-        List<Certificate> list = new ArrayList<>();
-        Calendar cal = Calendar.getInstance();
-        Date issueDate = new Date();
 
+    private Task<List<Certificate>> loadCertificateList() {
+        FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser == null) {
+            return Tasks.forException(new Exception("User chưa đăng nhập"));
+        }
 
-        cal.add(Calendar.DAY_OF_YEAR, 10);
-        list.add(new Certificate("1", "Chứng chỉ Sắp Hạn", "FPT Software", "CRD123", issueDate, cal.getTime(),
-                "url_a", "file_a.pdf", "user_1"));
+        String userId = currentUser.getUid();
 
+        return db.collection("certificates")
+                .whereEqualTo("userId", userId)
+                .get()
+                .continueWith(task -> {
+                    if (!task.isSuccessful()) {
+                        throw Objects.requireNonNull(task.getException());
+                    }
 
-        cal = Calendar.getInstance();
-        cal.add(Calendar.YEAR, -1);
-        list.add(new Certificate("2", "Chứng chỉ Đã Hết", "Alphabet (Google)", "CRD456", issueDate, cal.getTime(),
-                "url_b", "file_b.pdf", "user_1"));
-
-
-        list.add(new Certificate("3", "Vĩnh Viễn Certificate", "Microsoft", "CRD789", issueDate, null,
-                "url_c", "file_c.pdf", "user_1"));
-
-
-        cal = Calendar.getInstance();
-        cal.add(Calendar.DAY_OF_YEAR, 100);
-        list.add(new Certificate("4", "Chứng chỉ Hợp Lệ Dài Hạn", "Amazon", "CRD100", issueDate, cal.getTime(),
-                "url_d", "file_d.pdf", "user_1"));
-
-        return list;
+                    List<Certificate> result = new ArrayList<>();
+                    for (QueryDocumentSnapshot doc : task.getResult()) {
+                        Certificate certificate = doc.toObject(Certificate.class);
+                        certificate.setId(doc.getId());
+                        result.add(certificate);
+                    }
+                    return result;
+                });
     }
+
 
 
 
