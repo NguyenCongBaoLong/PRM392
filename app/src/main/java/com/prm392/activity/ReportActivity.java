@@ -78,7 +78,12 @@ public class ReportActivity extends AppCompatActivity {
                     .addOnSuccessListener(certificates -> {
                         data.clear();
                         data.addAll(certificates);
-                        Toast.makeText(this, "tải chứng chỉ thành công ", Toast.LENGTH_LONG).show();
+                        if (format.equalsIgnoreCase("PDF")) {
+                            exportToPDF(data);
+                        } else {
+                            exportToCSV(data);
+                        }
+                        Toast.makeText(this, "tải chứng chỉ thành công "+data.size()+"data", Toast.LENGTH_LONG).show();
 
                     })
                     .addOnFailureListener(e ->
@@ -88,11 +93,7 @@ public class ReportActivity extends AppCompatActivity {
 
 
 
-            if (format.equalsIgnoreCase("PDF")) {
-                exportToPDF(data);
-            } else {
-                exportToCSV(data);
-            }
+
         });
         btnBack.setOnClickListener(view->{
             Intent intent = new Intent(ReportActivity.this,MyAccountActivity.class);
@@ -102,8 +103,7 @@ public class ReportActivity extends AppCompatActivity {
 
     }
 
-    // Tạo dữ liệu giả định
-
+    // Tạo dữ liệu
     private Task<List<Certificate>> loadCertificateList() {
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser == null) {
@@ -117,6 +117,7 @@ public class ReportActivity extends AppCompatActivity {
                 .get()
                 .continueWith(task -> {
                     if (!task.isSuccessful()) {
+
                         throw Objects.requireNonNull(task.getException());
                     }
 
@@ -126,6 +127,7 @@ public class ReportActivity extends AppCompatActivity {
                         certificate.setId(doc.getId());
                         result.add(certificate);
                     }
+
                     return result;
                 });
     }
@@ -135,6 +137,7 @@ public class ReportActivity extends AppCompatActivity {
 
     private void exportToPDF(List<Certificate> data) {
         try {
+
             String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
             String fileName = "certificates_report_" + timeStamp + ".pdf";
             File file = new File(getExternalFilesDir(null), fileName);
@@ -202,7 +205,10 @@ public class ReportActivity extends AppCompatActivity {
 
     private void exportToCSV(List<Certificate> data) {
         try {
-            File file = new File(getExternalFilesDir(null), "certificates_report.csv");
+            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            String fileName = "certificates_report_" + timeStamp + ".csv";
+
+            File file = new File(getExternalFilesDir(null), fileName);
             FileWriter writer = new FileWriter(file);
 
             // Header
