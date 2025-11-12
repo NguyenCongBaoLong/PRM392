@@ -36,6 +36,8 @@ public class HomeActivity extends AppCompatActivity {
 
         list.add(new Feature("My Certificates", MyCertificateActivity.class));
         list.add(new Feature("My Account ", MyAccountActivity.class));
+        list.add(new Feature("Logout", LoginActivity.class));
+
 
         return list;
     }
