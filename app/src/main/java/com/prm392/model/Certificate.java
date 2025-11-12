@@ -14,7 +14,7 @@ public class Certificate implements Serializable {
     private String fileUrl;
     private String fileName;
     private String userId;
-    private List<String> tags;
+    private List<Tag> tags;
     private boolean isArchived;
 
     public Certificate() {
@@ -53,8 +53,8 @@ public class Certificate implements Serializable {
     // GETTERS & SETTERS
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
-    public List<String> getTags() { return tags; }
-    public void setTags(List<String> tags) { this.tags = tags; }
+    public List<Tag> getTags() { return tags; }
+    public void setTags(List<Tag> tags) { this.tags = tags; }
     public String getCertificateName() { return certificateName; }
     public void setCertificateName(String certificateName) { this.certificateName = certificateName; }
 
