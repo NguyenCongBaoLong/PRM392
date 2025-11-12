@@ -66,7 +66,7 @@ public class MyCertificateActivity extends AppCompatActivity {
 
         certificateAdapter = new CertificateAdapter(certificateList, certificate -> {
             Intent intent = new Intent(MyCertificateActivity.this, CertificateDetailActivity.class);
-            intent.putExtra("SELECTED_CERTIFICATE", certificate);
+            intent.putExtra("CERTIFICATE_ID", certificate.getId());
             startActivityForResult(intent, EDIT_CERTIFICATE_REQUEST_CODE);
         });
         recyclerView.setAdapter(certificateAdapter);
@@ -109,6 +109,7 @@ public class MyCertificateActivity extends AppCompatActivity {
     private void loadCertificateList() {
         FirebaseUser currentUser = mAuth.getCurrentUser();
 
+        // 1. Kiểm tra trạng thái đăng nhập
         if (currentUser == null) {
             Toast.makeText(this, "Vui lòng đăng nhập để xem chứng chỉ.", Toast.LENGTH_LONG).show();
             finish();
@@ -116,16 +117,21 @@ public class MyCertificateActivity extends AppCompatActivity {
         }
 
         String userId = currentUser.getUid();
+
+        // Luôn clear danh sách trước khi tải dữ liệu mới
         certificateList.clear();
+
+        // 2. Truy vấn Firestore bằng userId
         db.collection("certificates")
-                .whereEqualTo("userId", userId)
+                .whereEqualTo("userId", userId) // Lọc theo userId
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             try {
-
+                                // Sử dụng toObject() để ánh xạ dữ liệu
                                 Certificate certificate = document.toObject(Certificate.class);
+
 
                                 certificate.setId(document.getId());
 
@@ -135,9 +141,11 @@ public class MyCertificateActivity extends AppCompatActivity {
                             }
                         }
 
+
                         if (certificateAdapter != null) {
                             certificateAdapter.notifyDataSetChanged();
 
+                            // Kích hoạt lại filter với chuỗi rỗng để reset danh sách hiển thị
                             certificateAdapter.getFilter().filter("");
                         }
                     } else {
