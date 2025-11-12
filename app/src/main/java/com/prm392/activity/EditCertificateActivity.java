@@ -41,7 +41,6 @@ public class EditCertificateActivity extends AppCompatActivity {
         // 1. Ánh xạ các View
         etName = findViewById(R.id.et_certificate_name_edit);
         etIssuer = findViewById(R.id.et_issuing_organization_edit);
-        etCredentialId = findViewById(R.id.et_credential_id_edit);
         etIssueDate = findViewById(R.id.et_issue_date_edit);
         etExpirationDate = findViewById(R.id.et_expiration_date_edit);
         Button btnSave = findViewById(R.id.btn_save_edit);

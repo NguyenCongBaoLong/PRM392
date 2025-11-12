@@ -107,7 +107,11 @@ public class CertificateDetailActivity extends AppCompatActivity {
 
     private void setupClickListeners() {
         enableButtons(false);
-        btnBack.setOnClickListener(v -> finish());
+        btnBack.setOnClickListener(v -> {
+            Intent intent = new Intent(CertificateDetailActivity.this, MyCertificateActivity.class);
+            startActivity(intent);
+            finish();
+        });
         btnEdit.setOnClickListener(v -> openEditScreen(currentCertificate));
         btnShare.setOnClickListener(v -> shareCertificate());
         btnAddTag.setOnClickListener(v -> showAddTagDialog());
@@ -159,7 +163,6 @@ public class CertificateDetailActivity extends AppCompatActivity {
     private void displayDetails(Certificate certificate) {
         TextView tvName = findViewById(R.id.tv_detail_name);
         TextView tvIssuer = findViewById(R.id.tv_detail_issuer);
-        TextView tvCredentialId = findViewById(R.id.tv_detail_credential_id);
         TextView tvIssueDate = findViewById(R.id.tv_detail_issue_date);
         TextView tvExpiry = findViewById(R.id.tv_detail_expiry);
         TextView tvFileName = findViewById(R.id.tv_detail_file_name);
@@ -167,7 +170,6 @@ public class CertificateDetailActivity extends AppCompatActivity {
         tvName.setText(certificate.getCertificateName());
         tvIssuer.setText(certificate.getIssuingOrganization());
 
-        tvCredentialId.setText(certificate.getCredentialId() != null ? certificate.getCredentialId() : "N/A");
         tvFileName.setText(certificate.getFileName() != null ? certificate.getFileName() : "Chưa có file");
 
         if (certificate.getIssueDate() != null) {
