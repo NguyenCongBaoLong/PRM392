@@ -19,6 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 // Firebase & UI Imports
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.android.material.chip.Chip;
@@ -31,8 +32,10 @@ import com.prm392.model.Tag;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 
 public class CertificateDetailActivity extends AppCompatActivity {
@@ -48,6 +51,8 @@ public class CertificateDetailActivity extends AppCompatActivity {
     private Button btnAddTag;
 
     private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
+
 
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
@@ -59,6 +64,7 @@ public class CertificateDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_certificate_detail);
 
         db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
 
         certificateId = getIntent().getStringExtra("CERTIFICATE_ID");
         Log.d(TAG, "ID nhận được: " + certificateId);
@@ -328,6 +334,7 @@ public class CertificateDetailActivity extends AppCompatActivity {
         String certificateId = currentCertificate.getId() != null ? currentCertificate.getId() : "temp_id";
         String shareUrl = "https://prm392-certificate.com/share/" + certificateId;
         showShareIntent(shareUrl, "Link chia sẻ chứng chỉ");
+        logShareEvent("link");
     }
 
     private void shareViaEmail() {
@@ -347,7 +354,9 @@ public class CertificateDetailActivity extends AppCompatActivity {
 
         try {
             startActivity(Intent.createChooser(emailIntent, "Gửi email..."));
+            logShareEvent("email");
         } catch (ActivityNotFoundException e) {
+            logShareEvent("email");
             Toast.makeText(this, "Không tìm thấy ứng dụng email", Toast.LENGTH_SHORT).show();
         }
     }
@@ -365,6 +374,7 @@ public class CertificateDetailActivity extends AppCompatActivity {
                         "--- PRM392 Certificate App ---";
 
         showShareIntent(shareText, "Chia sẻ chứng chỉ");
+        logShareEvent("text");
     }
 
     private void showShareIntent(String content, String title) {
@@ -403,30 +413,66 @@ public class CertificateDetailActivity extends AppCompatActivity {
                 .setTitle(action + " Certificate")
                 .setMessage("Are you sure you want to " + action.toLowerCase() + " this certificate?")
                 .setPositiveButton("Yes", (dialog, which) -> {
-                    if (currentCertificate == null || currentCertificate.getId() == null) {
-                        Toast.makeText(this, "Lỗi: Không thể thực hiện thao tác do thiếu ID chứng chỉ.", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
+                    String docId = currentCertificate.getId();
                     if (isDelete) {
-                        db.collection(CERTIFICATES_COLLECTION).document(currentCertificate.getId()).delete()
+                        // Delete operation with verification
+                        db.collection("certificates").document(docId).delete()
                                 .addOnSuccessListener(aVoid -> {
-                                    Toast.makeText(this, "Deleted successfully", Toast.LENGTH_SHORT).show();
-                                    setResult(RESULT_OK);
-                                    finish();
+                                    db.collection("certificates").document(docId).get()
+                                            .addOnCompleteListener(task -> {
+                                                if (task.isSuccessful() && !task.getResult().exists()) {
+                                                    Toast.makeText(this, "Deleted successfully", Toast.LENGTH_SHORT).show();
+                                                    setResult(RESULT_OK);
+                                                    finish();
+                                                } else {
+                                                    Toast.makeText(this, "Delete failed: Document still exists", Toast.LENGTH_SHORT).show();
+                                                }
+                                            });
                                 })
                                 .addOnFailureListener(e -> Toast.makeText(this, "Error deleting: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                     } else {
-                        db.collection(CERTIFICATES_COLLECTION).document(currentCertificate.getId()).update("isArchived", true)
+                        // Archive operation: Set isArchived to true
+                        db.collection("certificates").document(docId)
+                                .update("isArchived", true)
                                 .addOnSuccessListener(aVoid -> {
-                                    Toast.makeText(this, "Archived successfully", Toast.LENGTH_SHORT).show();
-                                    setResult(RESULT_OK);
-                                    finish();
+                                    // Verify update
+                                    db.collection("certificates").document(docId).get()
+                                            .addOnCompleteListener(task -> {
+                                                if (task.isSuccessful() && task.getResult().getBoolean("isArchived") == true) {
+                                                    Toast.makeText(this, "Archived successfully", Toast.LENGTH_SHORT).show();
+                                                    setResult(RESULT_OK);
+                                                    finish();
+                                                } else {
+                                                    Toast.makeText(this, "Archive failed: State not updated", Toast.LENGTH_SHORT).show();
+                                                }
+                                            });
                                 })
                                 .addOnFailureListener(e -> Toast.makeText(this, "Error archiving: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                     }
                 })
                 .setNegativeButton("No", null)
                 .show();
+    }
+
+    private void logShareEvent(String shareType) {
+        if (currentCertificate == null || mAuth.getCurrentUser() == null) return;
+
+        String userUid = mAuth.getCurrentUser().getUid();
+
+        // Use Map for flexibility and server timestamp
+        Map<String, Object> historyMap = new HashMap<>();
+        historyMap.put("userId", userUid);
+        historyMap.put("certificateId", currentCertificate.getId());
+        historyMap.put("shareType", shareType);
+        historyMap.put("timestamp", com.google.firebase.firestore.FieldValue.serverTimestamp()); // Fix: Use server timestamp
+        historyMap.put("status", "success");
+
+        db.collection("sharing_history").add(historyMap)
+                .addOnSuccessListener(documentReference -> {
+                    Log.d("SharingHistory", "Logged share event: " + documentReference.getId());
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("SharingHistory", "Failed to log share: " + e.getMessage());
+                });
     }
 }

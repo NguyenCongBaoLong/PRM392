@@ -15,7 +15,7 @@ import com.prm392.R;
 public class MyAccountActivity extends AppCompatActivity {
 
 
-    private Button homebtn, editprofile,publicshowcase,report;
+    private Button homebtn, editprofile,publicshowcase,report, history;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +31,7 @@ public class MyAccountActivity extends AppCompatActivity {
         editprofile = findViewById(R.id.btnUpdateProfile);
         publicshowcase = findViewById(R.id.btnPublicShowcase);
         report = findViewById(R.id.btnReport);
+        history = findViewById(R.id.btnHistory);
         homebtn.setOnClickListener(view -> {
             Intent intent = new Intent(MyAccountActivity.this,HomeActivity.class);
             startActivity(intent);
@@ -48,6 +49,11 @@ public class MyAccountActivity extends AppCompatActivity {
         });
         report.setOnClickListener(view -> {
             Intent intent = new Intent(MyAccountActivity.this,ReportActivity.class);
+            startActivity(intent);
+            finish();
+        });
+        history.setOnClickListener(view -> {
+            Intent intent = new Intent(MyAccountActivity.this,SharingHistoryActivity.class);
             startActivity(intent);
             finish();
         });
