@@ -13,4 +13,10 @@
     <string name="choose_file">Choose File</string>
     <string name="no_file_selected">No file selected</string>
     <string name="save_certificate">Save Certificate</string>
+    <string-array name="sort_options">
+        <item>Ngày (Mới nhất trước)</item>
+        <item>Ngày (Cũ nhất trước)</item>
+        <item>Trạng thái (Thành công trước)</item>
+        <item>Trạng thái (Thất bại trước)</item>
+    </string-array>
 </resources>
