@@ -58,19 +58,6 @@
             android:layout_marginBottom="12dp"
             android:text="Tổ chức"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Mã chứng nhận (Credential ID):"
-            android:textStyle="bold" />
-        <TextView
-            android:id="@+id/tv_detail_credential_id"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:layout_marginBottom="12dp"
-            android:text="ID"/>
-
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"

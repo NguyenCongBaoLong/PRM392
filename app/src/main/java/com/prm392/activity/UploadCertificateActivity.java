@@ -52,7 +52,6 @@ public class UploadCertificateActivity extends AppCompatActivity {
     private void initViews() {
         etCertificateName = findViewById(R.id.etCertificateName);
         etIssuingOrganization = findViewById(R.id.etIssuingOrganization);
-        etCredentialId = findViewById(R.id.etCredentialId);
         btnIssueDate = findViewById(R.id.btnIssueDate);
         btnExpirationDate = findViewById(R.id.btnExpirationDate);
         btnUploadFile = findViewById(R.id.btnUploadFile);
@@ -152,7 +151,6 @@ public class UploadCertificateActivity extends AppCompatActivity {
     private void saveCertificate() {
         String certificateName = etCertificateName.getText().toString().trim();
         String issuingOrganization = etIssuingOrganization.getText().toString().trim();
-        String credentialId = etCredentialId.getText().toString().trim();
 
         if (certificateName.isEmpty() || issuingOrganization.isEmpty()) {
             Toast.makeText(this, "Please fill required fields", Toast.LENGTH_SHORT).show();
@@ -164,10 +162,10 @@ public class UploadCertificateActivity extends AppCompatActivity {
             return;
         }
 
-        uploadToFirebase(certificateName, issuingOrganization, credentialId);
+        uploadToFirebase(certificateName, issuingOrganization);
     }
 
-    private void uploadToFirebase(String certificateName, String issuingOrganization, String credentialId) {
+    private void uploadToFirebase(String certificateName, String issuingOrganization) {
         showLoading(true);
 
         String userId = FirebaseAuth.getInstance().getUid();
@@ -177,7 +175,11 @@ public class UploadCertificateActivity extends AppCompatActivity {
             return;
         }
 
-        String fileExtension = selectedFileName.substring(selectedFileName.lastIndexOf("."));
+        // Lấy phần mở rộng file
+        String fileExtension = "";
+        if (selectedFileName != null && selectedFileName.lastIndexOf(".") != -1) {
+            fileExtension = selectedFileName.substring(selectedFileName.lastIndexOf("."));
+        }
         String fileName = "certificates/" + userId + "/" + System.currentTimeMillis() + fileExtension;
 
         StorageReference fileRef = storageReference.child(fileName);
@@ -185,16 +187,17 @@ public class UploadCertificateActivity extends AppCompatActivity {
         fileRef.putFile(selectedFileUri)
                 .addOnSuccessListener(taskSnapshot -> fileRef.getDownloadUrl().addOnSuccessListener(downloadUri -> {
 
-                    // Tạo map metadata thay vì object, dễ lưu Firestore
+                    // Tạo map metadata và thêm trường isArchived
                     Map<String, Object> cert = new HashMap<>();
                     cert.put("certificateName", certificateName);
                     cert.put("issuingOrganization", issuingOrganization);
-                    cert.put("credentialId", credentialId);
                     cert.put("issueDate", issueCalendar.getTime());
                     cert.put("expirationDate", expirationCalendar.getTime());
                     cert.put("fileUrl", downloadUri.toString());
                     cert.put("fileName", selectedFileName);
                     cert.put("userId", userId);
+                    cert.put("isArchived", false);
+
 
                     // Lưu lên Firestore
                     firestore.collection("certificates")
@@ -202,6 +205,9 @@ public class UploadCertificateActivity extends AppCompatActivity {
                             .addOnSuccessListener(documentReference -> {
                                 showLoading(false);
                                 Toast.makeText(this, "Certificate uploaded & saved to Firestore!", Toast.LENGTH_LONG).show();
+//                                setResult(RESULT_OK);
+                                Intent intent = new Intent(UploadCertificateActivity.this, MyCertificateActivity.class);
+                                startActivity(intent);
                                 finish();
                             })
                             .addOnFailureListener(e -> {

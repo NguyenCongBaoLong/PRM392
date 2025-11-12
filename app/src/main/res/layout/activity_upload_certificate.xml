@@ -29,16 +29,6 @@
             android:importantForAutofill="yes"
             android:layout_marginBottom="16dp" />
 
-        <!-- Credential ID -->
-        <EditText
-            android:id="@+id/etCredentialId"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:hint="@string/credential_id"
-            android:inputType="text"
-            android:importantForAutofill="yes"
-            android:layout_marginBottom="16dp" />
-
         <!-- Date Selection Row -->
         <LinearLayout
             android:layout_width="match_parent"

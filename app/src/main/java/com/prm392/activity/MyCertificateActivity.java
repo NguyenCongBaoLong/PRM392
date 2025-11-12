@@ -94,6 +94,7 @@ public class MyCertificateActivity extends AppCompatActivity {
         btnUploadNew.setOnClickListener(v -> {
             Intent intent = new Intent(MyCertificateActivity.this, UploadCertificateActivity.class);
             startActivity(intent);
+            finish();
         });
     }
 
@@ -136,7 +137,8 @@ public class MyCertificateActivity extends AppCompatActivity {
         uniqueTags.clear(); // Xóa tags cũ
 
         Query query = db.collection(CERTIFICATES_COLLECTION)
-                .whereEqualTo("userId", userId);
+                .whereEqualTo("userId", userId)
+        .whereEqualTo("isArchived", false);
 
         // THÊM ĐIỀU KIỆN LỌC THEO TAG
         if (selectedTag != null && !selectedTag.equalsIgnoreCase("Tất cả")) {
