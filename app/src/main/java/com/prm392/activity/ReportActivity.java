@@ -135,7 +135,9 @@ public class ReportActivity extends AppCompatActivity {
 
     private void exportToPDF(List<Certificate> data) {
         try {
-            File file = new File(getExternalFilesDir(null), "certificates_report.pdf");
+            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            String fileName = "certificates_report_" + timeStamp + ".pdf";
+            File file = new File(getExternalFilesDir(null), fileName);
 
             PdfDocument pdfDocument = new PdfDocument();
             Paint paint = new Paint();
